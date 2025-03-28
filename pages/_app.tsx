@@ -6,9 +6,9 @@ import '../style.css';
 import { useEffect } from 'react';
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
-  useEffect(() => {
-    document.documentElement.classList.add('dark')
-  }, []);
+  // useEffect(() => {
+  //   document.documentElement.classList.add('dark')
+  // }, []);
 
   return (<>
     <Head>

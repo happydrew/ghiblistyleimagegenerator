@@ -1,13 +1,13 @@
 export default {
-  // index: {
-  //   type: 'page',
-  //   title: 'Home',
-  //   display: 'hidden',
-  //   //layout: 'raw',
-  //   theme: {
-  //     layout: 'raw'
-  //   }
-  // },
+  index: {
+    type: 'page',
+    title: 'Home',
+    display: 'hidden',
+    //layout: 'raw',
+    theme: {
+      layout: 'raw'
+    }
+  },
 
 
   // docs: {
