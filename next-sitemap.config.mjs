@@ -2,7 +2,7 @@
 
 /** @type {import('next-sitemap').IConfig} */
 export default {
-  siteUrl: "https://baseballbrosio.fun",
+  siteUrl: "https://ghiblistyleimagegenerator.cc",
   generateIndexSitemap: false,
   generateRobotsTxt: false,
   // output: "export", // Set static output here
