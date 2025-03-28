@@ -1,0 +1,26 @@
+### Create Next.js [`App` Component](https://nextjs.org/docs/pages/building-your-application/routing/custom-app)
+
+Create `pages/_app.jsx` file with the following content:
+
+```jsx filename="pages/_app.jsx"
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
+```
+
+### Ready to Go!
+
+Now, you can create your first MDX page as `pages/index.mdx`:
+
+```mdx filename="pages/index.mdx"
+# Welcome to Nextra
+
+Hello, world!
+```
+
+And run the `dev` command specified in `package.json` to start developing the
+project! 🎉
+
+```sh npm2yarn
+npm run dev
+```

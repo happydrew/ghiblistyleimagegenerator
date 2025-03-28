@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "es6",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "paths": {
+      "@*": [
+        "./*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "strictNullChecks": false
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+, "pages/_app.tsx.old_withads"    //"pages/tags/[slug].mdx",
+, "app/page.tsx_bak"  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
