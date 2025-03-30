@@ -193,13 +193,19 @@ const HomePage = () => {
 
     const handleDownload = (original: string, ghibli: string, combined: boolean = false) => {
         // 下载单张图片
-        const downloadSingle = (src: string, filename: string) => {
-            const link = document.createElement('a');
-            link.href = src;
+        const downloadSingle = async (src: string, filename: string) => {
+            const response = await fetch(src);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = blobUrl;
             link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+            URL.revokeObjectURL(blobUrl); // 释放内存
         };
 
         // 如果要下载合并图片
@@ -212,25 +218,44 @@ const HomePage = () => {
             const img1 = new Image();
             const img2 = new Image();
 
-            img1.onload = () => {
-                img2.onload = () => {
-                    // 设置画布大小为两张图片并排
-                    canvas.width = img1.width + img2.width;
-                    canvas.height = Math.max(img1.height, img2.height);
+            img1.crossOrigin = 'anonymous'; // 处理跨域问题
+            img2.crossOrigin = 'anonymous'; // 处理跨域问题
 
-                    // 绘制两张图片
-                    ctx?.drawImage(img1, 0, 0);
-                    ctx?.drawImage(img2, img1.width, 0);
-
-                    // 转换为数据URL并下载
-                    const combinedImage = canvas.toDataURL('image/png');
-                    downloadSingle(combinedImage, 'ghibli-comparison.png');
-                };
-                img2.src = ghibli;
+            // 创建加载图片的Promise
+            const loadImage = (img: HTMLImageElement, src: string) => {
+                return new Promise<void>((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+                    img.src = src;
+                });
             };
-            img1.src = original;
+
+            Promise.all([
+                loadImage(img1, original),
+                loadImage(img2, ghibli)
+            ]).then(() => {
+                // 设置画布大小为两张图片并排
+                canvas.width = img1.width + img2.width;
+                canvas.height = Math.max(img1.height, img2.height);
+
+                // 绘制两张图片
+                ctx?.drawImage(img1, 0, 0);
+                ctx?.drawImage(img2, img1.width, 0);
+
+                // 转换为 Blob 并下载
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        downloadSingle(url, 'ghibli-comparison.png');
+                        URL.revokeObjectURL(url); // 释放内存
+                    }
+                }, 'image/png');
+            }).catch((error) => {
+                console.error('Error loading images:', error);
+                alert('Failed to load images for download. Please try again.');
+            });
         } else {
-            // 下载Ghibli风格图片
+            // 下载 Ghibli 风格图片
             downloadSingle(ghibli, 'ghibli-style.png');
         }
     };
@@ -642,10 +667,16 @@ const HomePage = () => {
                             <div className="max-w-4xl mx-auto relative">
                                 {/* 添加模糊效果覆盖层 */}
                                 {isResultBlurred && (
-                                    <div className="absolute inset-0 backdrop-blur-md z-10 flex items-center justify-center">
+                                    <div className="absolute inset-0 backdrop-blur-md z-10 flex flex-col items-center justify-center gap-2">
                                         <div className="p-4 bg-white/70 rounded-lg shadow-lg">
                                             <p className="text-lg font-medium text-[#1c4c3b]">Your image is ready!</p>
                                         </div>
+                                        <button
+                                            className="bg-[#1c4c3b] text-white p-3 stext-sm rounded-lg hover:bg-[#2a6854] transition"
+                                            onClick={() => setShowPostGenAd(true)}
+                                        >
+                                            Reveal Your Ghibli Image
+                                        </button>
                                     </div>
                                 )}
                                 <ImageComparisonCard

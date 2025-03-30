@@ -1,6 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from "replicate";
 
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: "2mb", // 允许最大 10MB
+        },
+    },
+};
+
 const OPENROUTER_API_KEY = "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";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
