@@ -206,28 +206,15 @@ const config: DocsThemeConfig = {
         <meta name="description" content={description} />
         <meta property="og:description" content={description} />
         <meta property="og:image" content={image || '/favicon.ico'} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={image || '/favicon.ico'} />
         {canonical && <link rel="canonical" href={canonical} />}
 
-        <meta name="msapplication-TileColor" content="#fff" />
         <meta httpEquiv="Content-Language" content="en" />
-        {/* <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site:domain" content="nextra.site" />
-        <meta name="twitter:url" content="https://nextra.site" /> */}
-        <meta name="apple-mobile-web-app-title" content="GameHome" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/favicon.png" type="image/png" />
-        <link
-          rel="icon"
-          href="/favicon-dark.svg"
-          type="image/svg+xml"
-          media="(prefers-color-scheme: dark)"
-        />
-        <link
-          rel="icon"
-          href="/favicon-dark.png"
-          type="image/png"
-          media="(prefers-color-scheme: dark)"
-        />
+
+        <link rel="icon" href="/favicon.ico" />
       </>
     )
   },

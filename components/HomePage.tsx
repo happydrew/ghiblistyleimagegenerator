@@ -619,17 +619,6 @@ const HomePage = () => {
                 </div>
             )}
 
-            <Head>
-                <title>Free Ghibli Style Image Generator</title>
-                <meta name="description" content="Convert images to Studio Ghibli style for free in seconds with our free ghibli style image generator." />
-                <link rel="icon" href="/favicon.ico" />
-                {/* Additional SEO meta tags */}
-                <meta name="keywords" content="ghibli style image generator, chatgpt ghibli prompt, studio ghibli style ai chatgpt, ghibli art chatgpt, chatgpt 4o ghibli" />
-                <meta property="og:title" content="Ghibli Style Image Generator | AI-Powered Miyazaki-Style Generator" />
-                <meta property="og:description" content="Transform your ideas into magical Ghibli-style illustrations with our AI image generator. Free, fast, and incredibly accurate." />
-                <meta property="og:type" content="website" />
-            </Head>
-
             {/* 导航栏 */}
             {/* <header className="fixed top-0 left-0 h-[4rem] right-0 z-50 bg-[#e7f0dc]/90 backdrop-blur-sm border-b border-[#89aa7b]">
                 <div className="container mx-auto px-4 py-2 flex justify-between items-center">
