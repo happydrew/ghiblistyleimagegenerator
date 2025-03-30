@@ -196,7 +196,7 @@ const config: DocsThemeConfig = {
     const { asPath } = useRouter()
     const path = asPath.indexOf("?") > 0 ? asPath.substring(0, asPath.indexOf("?")) : asPath
 
-    const title = `${pageTitle}${path === "/" ? "" : " | BaseballBros"}`
+    const title = `${pageTitle}${path === "/" ? "" : " | Free Ghibli Style Image Generator"}`
     const { description, canonical, image } = frontMatter
 
     return (
