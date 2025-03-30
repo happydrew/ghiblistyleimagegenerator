@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from "replicate";
 
 // export const runtime = "edge";
-process.env.REPLICATE_API_TOKEN = "r8_TJqrWW97lD4Z7nebTcrjYoPqhdc3AeE35K076"
 
 export const config = {
     api: {
