@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
+import { convertPngToWebp } from '@lib/utils'
 
 // 自定义组件
 import { Tag } from '../components';
@@ -81,10 +82,36 @@ const HomePage = () => {
         const reader = new FileReader();
         reader.onload = (event) => {
             if (event.target?.result) {
-                // 存储完整的 base64 字符串用于显示
-                setUploadedImage(event.target.result as string);
-                // 清除之前生成的图片
-                setGeneratedImage(null);
+                const img = document.createElement('img');
+                img.crossOrigin = 'anonymous'; // 处理跨域问题
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    // 检查宽度并按比例调整高度
+                    if (width > 1024) {
+                        height = Math.round((height * 1024) / width);
+                        width = 1024;
+                    }
+
+                    // 创建一个 canvas 来绘制压缩后的图像
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        // 转换为 WebP 格式
+                        const webpImage = canvas.toDataURL('image/webp');
+                        // 存储压缩后的 base64 字符串用于显示
+                        setUploadedImage(webpImage);
+                        // 清除之前生成的图片
+                        setGeneratedImage(null);
+                    }
+                    canvas.remove();
+                    img.remove();
+                };
+                img.src = event.target.result as string;
             }
         };
         reader.readAsDataURL(file);
@@ -148,16 +175,26 @@ const HomePage = () => {
                     const responseData = await response.json();
                     // 确保使用正确的属性路径获取图片数据
                     const ghibliImage = responseData.ghibliImage;
+                    setIsGenerating(false);
                     setGeneratedImage(ghibliImage);
-
-                    // 添加到历史记录
-                    const newHistoryItem: HistoryItem = {
-                        originalImage: uploadedImage,
-                        ghibliImage: ghibliImage,
-                        timestamp: Date.now(),
-                    };
-
-                    setHistory(prev => [newHistoryItem, ...prev]);
+                    const img = document.createElement('img');
+                    img.crossOrigin = 'anonymous'; // 处理跨域问题
+                    img.onload = () => {
+                        // 转换为 WebP 格式
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.drawImage(img, 0, 0, img.width, img.height);
+                            // 转换为 WebP 格式
+                            const img_base64 = canvas.toDataURL('image/jpeg');
+                            setGeneratedImage(img_base64);
+                        }
+                        canvas.remove();
+                        img.remove();
+                    }
+                    img.src = ghibliImage;
 
                     // 设置模糊效果并显示生成后广告
                     setIsResultBlurred(true);
@@ -175,8 +212,20 @@ const HomePage = () => {
             // 关闭生成后广告并移除模糊效果
             setShowPostGenAd(false);
             setIsResultBlurred(false);
+            addToHistory(uploadedImage, generatedImage);
         }
     };
+
+    const addToHistory = (originalImage: string, ghibliImage: string) => {
+        // 添加到历史记录
+        const newHistoryItem: HistoryItem = {
+            originalImage: originalImage,
+            ghibliImage: ghibliImage,
+            timestamp: Date.now(),
+        };
+
+        setHistory(prev => [newHistoryItem, ...prev]);
+    }
 
     const handleImageClick = (imageSrc: string) => {
         setSelectedImage(imageSrc);
@@ -257,6 +306,9 @@ const HomePage = () => {
                         URL.revokeObjectURL(url); // 释放内存
                     }
                 }, 'image/png');
+                canvas.remove();
+                img_ori.remove();
+                img_ghi.remove();
             }).catch((error) => {
                 console.error('Error loading images:', error);
                 alert('Failed to load images for download. Please try again.');

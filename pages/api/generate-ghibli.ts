@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from "replicate";
 
-process.env.REPLICATE_API_TOKEN = "r8_TJqrWW97lD4Z7nebTcrjYoPqhdc3AeE35K076";
+// export const runtime = "edge";
 
 export const config = {
     api: {
@@ -35,7 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             output_format: "jpg",
             output_quality: 70,
             prompt_strength: 0.4,
-            guidance_scale: 5
+            guidance_scale: 5,
+            go_fast: true
         };
 
         const output = await replicate.run("colinmcdonnell22/ghiblify-3:407b7fd425e00eedefe7db3041662a36a126f1e4988e6fbadfc49b157159f015", { input });
