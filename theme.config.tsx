@@ -10,9 +10,9 @@ const inter = Inter({ subsets: ['latin'] });
 
 const logo = (
   <div className="flex justify-center items-center" title="AutoFormAI">
-    <Image src="/favicon.png" alt="baseballbros logo" width={40} height={40} />
-    <span className={`${inter.className} font-cartoon ml-2 text-cyan-400 text-2xl lg:text-4xl font-black drop-shadow-[0_0_10px_#00FFFF]`}>
-      Baseball<span className='text-red-500'>Bros</span>IO.<span className='text-yellow-500'>fun</span>
+    <Image src="/favicon.png" alt="Ghibli Style Image Generator logo" width={40} height={40} />
+    <span className={`${inter.className} font-cartoon ml-2 text-green-800 text-xl lg:text-3xl font-black drop-shadow-[0_0_10px_#D2B48C]`}>
+      Ghibli<span className='text-amber-500'>Style</span>Image<span className='text-orange-600'>Generator</span>
     </span>
   </div>
 )

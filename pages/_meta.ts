@@ -8,6 +8,26 @@ export default {
       layout: 'raw'
     }
   },
+  about: {
+    type: 'page',
+    title: 'About',
+    href: '#about'
+  },
+  features: {
+    type: 'page',
+    title: 'Features',
+    href: '#features'
+  },
+  examples: {
+    type: 'page',
+    title: 'Examples',
+    href: '#examples'
+  },
+  faq: {
+    type: 'page',
+    title: 'FAQ',
+    href: '#faq'
+  },
 
 
   // docs: {

@@ -54,7 +54,16 @@ const HomePage = () => {
     // 保存历史记录
     useEffect(() => {
         if (history.length > 0) {
-            localStorage.setItem('ghibliImageHistory', JSON.stringify(history));
+            let saveSuccess = false;
+            while (!saveSuccess) {
+                try {
+                    localStorage.setItem('ghibliImageHistory', JSON.stringify(history));
+                    saveSuccess = true;
+                } catch (e) {
+                    console.error('Failed to save history,exceed the quota:', e);
+                    history.shift(); // 移除最早的记录
+                }
+            }
         }
     }, [history]);
 
@@ -145,7 +154,12 @@ const HomePage = () => {
 
     const handleAdClick = async (isPreGenAd: boolean) => {
         // 这里可以添加实际的广告跳转逻辑
-        window.open('https://povaique.top/4/9150862', '_blank');
+        const currentWindow = window
+        const newTab = window.open('https://povaique.top/4/9150862', '_blank', 'noopener noreferrer');
+        if (newTab) {
+            newTab.blur();
+            currentWindow.focus();
+        }
 
         if (isPreGenAd) {
             // 关闭生成前广告
@@ -243,18 +257,42 @@ const HomePage = () => {
     const handleDownload = (original: string, ghibli: string, combined: boolean = false) => {
         // 下载单张图片
         const downloadSingle = async (src: string, filename: string) => {
-            const response = await fetch(src);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
+            let watermark_img = src;
+            const img = document.createElement('img');
+            img.crossOrigin = 'anonymous';
+            img.onload = async () => {
+                // 绘制水印
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
 
-            const link = document.createElement("a");
-            link.href = blobUrl;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                ctx.drawImage(img, 0, 0);
+                // 添加水印
+                ctx!.font = '40px Arial'; // 设置字体和大小
+                ctx!.fillStyle = 'rgba(255, 255, 255, 0.8)'; // 设置水印颜色为浅白色
+                ctx!.textAlign = 'right'; // 右对齐
+                ctx!.fillText('https://GhibliStyleImageGenerator.cc', canvas.width - 12, canvas.height - 12); // 在右下角绘制水印
+                // 转换为 Blob 并下载
+                watermark_img = canvas.toDataURL('image/jpeg');
 
-            URL.revokeObjectURL(blobUrl); // 释放内存
+                const response = await fetch(watermark_img);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+
+                const link = document.createElement("a");
+                link.href = blobUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                URL.revokeObjectURL(blobUrl); // 释放内存
+
+                canvas.remove();
+                img.remove();
+            }
+            img.src = src;
         };
 
         // 如果要下载合并图片
@@ -292,20 +330,10 @@ const HomePage = () => {
                 ctx!.drawImage(img_ori, 0, 0, img_ghi.width, img_ghi.height);
                 ctx!.drawImage(img_ghi, img_ghi.width, 0);
 
-                // 添加水印
-                ctx!.font = '40px Arial'; // 设置字体和大小
-                ctx!.fillStyle = 'rgba(255, 255, 255, 0.8)'; // 设置水印颜色为浅白色
-                ctx!.textAlign = 'right'; // 右对齐
-                ctx!.fillText('https://GhibliStyleImageGenerator.cc', canvas.width - 12, canvas.height - 12); // 在右下角绘制水印
-
                 // 转换为 Blob 并下载
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        downloadSingle(url, 'ghibli-comparison.png');
-                        URL.revokeObjectURL(url); // 释放内存
-                    }
-                }, 'image/png');
+                const base64 = canvas.toDataURL('image/jpeg');
+                downloadSingle(base64, 'ghibli-comparison.png');
+
                 canvas.remove();
                 img_ori.remove();
                 img_ghi.remove();
@@ -592,8 +620,8 @@ const HomePage = () => {
             )}
 
             <Head>
-                <title>Ghibli Style Image Generator | AI-Powered Studio Ghibli Image Generator</title>
-                <meta name="description" content="Create stunning Ghibli-style AI-generated images in seconds with our free ghibli style image generator. Powered by ChatGPT-4o technology." />
+                <title>Free Ghibli Style Image Generator</title>
+                <meta name="description" content="Convert image to Studio Ghibli style stunning illustrations for free in seconds with our free ghibli style image generator." />
                 <link rel="icon" href="/favicon.ico" />
                 {/* Additional SEO meta tags */}
                 <meta name="keywords" content="ghibli style image generator, chatgpt ghibli prompt, studio ghibli style ai chatgpt, ghibli art chatgpt, chatgpt 4o ghibli" />
@@ -603,7 +631,7 @@ const HomePage = () => {
             </Head>
 
             {/* 导航栏 */}
-            <header className="fixed top-0 left-0 h-[4rem] right-0 z-50 bg-[#e7f0dc]/90 backdrop-blur-sm border-b border-[#89aa7b]">
+            {/* <header className="fixed top-0 left-0 h-[4rem] right-0 z-50 bg-[#e7f0dc]/90 backdrop-blur-sm border-b border-[#89aa7b]">
                 <div className="container mx-auto px-4 py-2 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <Image src="/favicon.ico" alt="Ghibli Style AI Generator Logo" width={40} height={40} className="rounded-lg" />
@@ -615,7 +643,7 @@ const HomePage = () => {
                         <a href="#examples" className="text-[#506a3a] hover:text-[#1c4c3b] transition">Examples</a>
                         <a href="#faq" className="text-[#506a3a] hover:text-[#1c4c3b] transition">FAQ</a>
                     </nav>
-                    {/* <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4">
                         <select className="bg-transparent border-none text-sm text-[#506a3a]" aria-label="Select Language">
                             <option value="en">English</option>
                             <option value="zh">中文</option>
@@ -623,9 +651,9 @@ const HomePage = () => {
                         <button className="bg-[#1c4c3b] text-white px-3 py-1 text-sm rounded-lg hover:bg-[#2a6854] transition">
                             Login
                         </button>
-                    </div> */}
+                    </div>
                 </div>
-            </header>
+            </header> */}
 
             <main className="pt-16">
                 {/* 英雄区域 */}
