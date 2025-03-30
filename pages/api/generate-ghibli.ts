@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from "replicate";
 
+process.env.REPLICATE_API_TOKEN = "r8_TJqrWW97lD4Z7nebTcrjYoPqhdc3AeE35K076";
+
 export const config = {
     api: {
         bodyParser: {
@@ -9,7 +11,6 @@ export const config = {
     },
 };
 
-const OPENROUTER_API_KEY = "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";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
