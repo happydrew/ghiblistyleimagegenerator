@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 
 // 自定义组件
 import { Tag } from '../components';
 
+// 定义历史记录类型
+interface HistoryItem {
+    originalImage: string;
+    ghibliImage: string;
+    timestamp: number;
+    prompt?: string;
+}
+
 const HomePage = () => {
     const [showModal, setShowModal] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [selectedImage, setSelectedImage] = useState('');
     const [showImageViewer, setShowImageViewer] = useState(false);
+    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [generationError, setGenerationError] = useState('');
+    const [history, setHistory] = useState<HistoryItem[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    // 新增状态控制广告显示
+    const [showPreGenAd, setShowPreGenAd] = useState(false);
+    const [showPostGenAd, setShowPostGenAd] = useState(false);
+    const [isResultBlurred, setIsResultBlurred] = useState(false);
+    const [pendingGeneration, setPendingGeneration] = useState(false);
 
     // 示例提示词
     const examplePrompts = [
@@ -19,46 +38,452 @@ const HomePage = () => {
         "An oceanic scene with flying machines and fluffy clouds in Ghibli aesthetic"
     ];
 
+    // 加载历史记录
+    useEffect(() => {
+        const savedHistory = localStorage.getItem('ghibliImageHistory');
+        if (savedHistory) {
+            try {
+                setHistory(JSON.parse(savedHistory));
+            } catch (e) {
+                console.error('Failed to parse history:', e);
+            }
+        }
+    }, []);
+
+    // 保存历史记录
+    useEffect(() => {
+        if (history.length > 0) {
+            localStorage.setItem('ghibliImageHistory', JSON.stringify(history));
+        }
+    }, [history]);
+
     const handleRandomPrompt = () => {
         const randomIndex = Math.floor(Math.random() * examplePrompts.length);
         setPrompt(examplePrompts[randomIndex]);
     };
 
-    const handleGenerateClick = () => {
-        setShowModal(true);
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // 检查文件类型
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file');
+            return;
+        }
+
+        // 检查文件大小 (限制为 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image size should be less than 2MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (event.target?.result) {
+                // 存储完整的 base64 字符串用于显示
+                setUploadedImage(event.target.result as string);
+                // 清除之前生成的图片
+                setGeneratedImage(null);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
-    const handleImageClick = (imageSrc) => {
+    const triggerFileInput = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleGenerateClick = async () => {
+        if (!uploadedImage) {
+            alert('Please upload an image first');
+            return;
+        }
+
+        // 显示生成前广告
+        setShowPreGenAd(true);
+        setPendingGeneration(true);
+    };
+
+    // 修改处理广告的函数
+    const handleCloseAd = (isPreGenAd: boolean) => {
+        if (isPreGenAd) {
+            setShowPreGenAd(false);
+            setPendingGeneration(false);
+        } else {
+            setShowPostGenAd(false);
+            // 不移除模糊效果，因为用户没有查看广告
+        }
+    };
+
+    const handleAdClick = async (isPreGenAd: boolean) => {
+        // 这里可以添加实际的广告跳转逻辑
+        window.open('https://povaique.top/4/9150862', '_blank');
+
+        if (isPreGenAd) {
+            // 关闭生成前广告
+            setShowPreGenAd(false);
+            setPendingGeneration(false);
+
+            // 开始生成过程
+            setIsGenerating(true);
+            setGenerationError('');
+
+            try {
+                // 移除 base64 字符串的前缀部分
+                const base64WithoutPrefix = uploadedImage!.split(',')[1];
+
+                // 调用后端API生成图片
+                const response = await fetch('/api/generate-ghibli', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image: base64WithoutPrefix,
+                    })
+                });
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    // 确保使用正确的属性路径获取图片数据
+                    const ghibliImage = responseData.ghibliImage;
+                    setGeneratedImage(ghibliImage);
+
+                    // 添加到历史记录
+                    const newHistoryItem: HistoryItem = {
+                        originalImage: uploadedImage,
+                        ghibliImage: ghibliImage,
+                        timestamp: Date.now(),
+                    };
+
+                    setHistory(prev => [newHistoryItem, ...prev]);
+
+                    // 设置模糊效果并显示生成后广告
+                    setIsResultBlurred(true);
+                    setShowPostGenAd(true);
+                } else {
+                    setGenerationError('Failed to generate image. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error generating image:', error);
+                setGenerationError('An error occurred. Please try again later.');
+            } finally {
+                setIsGenerating(false);
+            }
+        } else {
+            // 关闭生成后广告并移除模糊效果
+            setShowPostGenAd(false);
+            setIsResultBlurred(false);
+        }
+    };
+
+    const handleImageClick = (imageSrc: string) => {
         setSelectedImage(imageSrc);
         setShowImageViewer(true);
+        window.addEventListener('keydown', handleESC);
     };
 
-    return (
-        <div className="min-h-screen bg-[#f5f9ee]">
-            {/* 弹窗 */}
-            {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
-                    <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-16 h-16 mb-4 rounded-full bg-[#e7f0dc] flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-[#1c4c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+    const handleESC = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            setShowImageViewer(false);
+            window.removeEventListener('keydown', handleESC);
+        }
+    };
+
+    const handleDownload = (original: string, ghibli: string, combined: boolean = false) => {
+        // 下载单张图片
+        const downloadSingle = (src: string, filename: string) => {
+            const link = document.createElement('a');
+            link.href = src;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // 如果要下载合并图片
+        if (combined) {
+            // 创建一个画布来合并图片
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // 加载两张图片
+            const img1 = new Image();
+            const img2 = new Image();
+
+            img1.onload = () => {
+                img2.onload = () => {
+                    // 设置画布大小为两张图片并排
+                    canvas.width = img1.width + img2.width;
+                    canvas.height = Math.max(img1.height, img2.height);
+
+                    // 绘制两张图片
+                    ctx?.drawImage(img1, 0, 0);
+                    ctx?.drawImage(img2, img1.width, 0);
+
+                    // 转换为数据URL并下载
+                    const combinedImage = canvas.toDataURL('image/png');
+                    downloadSingle(combinedImage, 'ghibli-comparison.png');
+                };
+                img2.src = ghibli;
+            };
+            img1.src = original;
+        } else {
+            // 下载Ghibli风格图片
+            downloadSingle(ghibli, 'ghibli-style.png');
+        }
+    };
+
+    const handleShare = async (original: string, ghibli: string) => {
+        try {
+            // 判断是否支持原生分享API
+            if (navigator.share) {
+                // 尝试使用原生分享API
+                await navigator.share({
+                    title: 'My Ghibli Style Image',
+                    text: 'Check out this amazing Ghibli style image I created!',
+                    url: window.location.href
+                });
+                return;
+            }
+
+            // 如果不支持原生分享，则使用备用方法：复制链接或创建分享图像
+            // 创建一个画布来合并图片
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            if (!ctx) {
+                throw new Error('Could not get canvas context');
+            }
+
+            // 加载两张图片
+            const img1 = new Image();
+            const img2 = new Image();
+
+            img1.crossOrigin = 'anonymous';
+            img2.crossOrigin = 'anonymous';
+
+            // 创建加载两张图片的Promise
+            const loadImage = (img: HTMLImageElement, src: string) => {
+                return new Promise<void>((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            };
+
+            try {
+                // 等待两张图片加载完成
+                await Promise.all([
+                    loadImage(img1, original),
+                    loadImage(img2, ghibli)
+                ]);
+
+                // 设置画布大小为两张图片并排
+                canvas.width = img1.width + img2.width;
+                canvas.height = Math.max(img1.height, img2.height);
+
+                // 绘制两张图片
+                ctx.drawImage(img1, 0, 0);
+                ctx.drawImage(img2, img1.width, 0);
+
+                // 将合并后的图片转换为Blob
+                const blob = await new Promise<Blob | null>((resolve) => {
+                    canvas.toBlob(resolve, 'image/png');
+                });
+
+                if (!blob) {
+                    throw new Error('Failed to create image blob');
+                }
+
+                // 尝试使用剪贴板API复制图片
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({
+                            [blob.type]: blob
+                        })
+                    ]);
+                    alert('Image copied to clipboard! Now you can paste it in your applications.');
+                } catch (clipboardError) {
+                    // 如果剪贴板API失败，提供下载选项
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'ghibli-comparison.png';
+                    link.click();
+
+                    URL.revokeObjectURL(url);
+                    alert('Image downloaded successfully! You can now share it manually.');
+                }
+            } catch (imageError) {
+                console.error('Error loading images:', imageError);
+                // 如果加载图片失败，提供复制URL作为后备选项
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert('Website URL copied to clipboard. You can share it with others!');
+                } catch (urlError) {
+                    alert('Could not share image. Please try downloading it and sharing manually.');
+                }
+            }
+        } catch (error) {
+            console.error('Error sharing:', error);
+            alert('Failed to share. Please try downloading and sharing manually.');
+        }
+    };
+
+    // 清除历史记录
+    const clearHistory = () => {
+        if (confirm('Are you sure you want to clear all history?')) {
+            setHistory([]);
+            localStorage.removeItem('ghibliImageHistory');
+        }
+    };
+
+    // 图片比较组件
+    const ImageComparisonCard = ({ original, ghibli, prompt }: { original: string, ghibli: string, prompt?: string }) => (
+        <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-[#89aa7b] mb-8">
+            <div className="p-4 bg-[#e7f0dc] flex justify-between items-center">
+                <h3 className="text-lg font-bold text-[#1c4c3b]">Ghibli Style Transformation</h3>
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => handleShare(original, ghibli)}
+                        className="p-2 bg-[#1c4c3b] text-white rounded-full hover:bg-[#2a6854] transition"
+                        title="Share"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                    </button>
+                    <div className="relative group">
+                        <button
+                            className="p-2 bg-[#1c4c3b] text-white rounded-full hover:bg-[#2a6854] transition"
+                            title="Download"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </button>
+                        <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                            <div className="py-2 px-1">
+                                <button
+                                    onClick={() => handleDownload(original, ghibli, false)}
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#e7f0dc] w-full text-left rounded"
+                                >
+                                    Download Ghibli Image
+                                </button>
+                                <button
+                                    onClick={() => handleDownload(original, ghibli, true)}
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#e7f0dc] w-full text-left rounded"
+                                >
+                                    Download Comparison
+                                </button>
                             </div>
-                            <h3 className="text-xl font-bold mb-2 text-[#1c4c3b]">Almost Ready!</h3>
-                            <p className="text-[#506a3a] mb-4">
-                                Thank you for your interest! Our Ghibli-style image generator is just getting its final touches.
-                                Please wait a moment while we prepare this magical feature for you.
-                            </p>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="px-4 py-2 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition"
-                            >
-                                Got it!
-                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-1/2 border-r border-[#e7f0dc]">
+                    <div className="relative pt-[100%]">
+                        <img
+                            src={original}
+                            alt="Original image"
+                            className="absolute top-0 left-0 w-full h-full object-contain cursor-pointer"
+                            onClick={() => handleImageClick(original)}
+                        />
+                    </div>
+                    <div className="p-2 text-center bg-[#f5f9ee]">
+                        <p className="text-[#506a3a] font-medium">Original</p>
+                    </div>
+                </div>
+                <div className="w-full md:w-1/2">
+                    <div className="relative pt-[100%]">
+                        <img
+                            src={ghibli}
+                            alt="Ghibli style image"
+                            className="absolute top-0 left-0 w-full h-full object-contain cursor-pointer"
+                            onClick={() => handleImageClick(ghibli)}
+                        />
+                    </div>
+                    <div className="p-2 text-center bg-[#f5f9ee]">
+                        <p className="text-[#506a3a] font-medium">Ghibli Style</p>
+                    </div>
+                </div>
+            </div>
+            {prompt && (
+                <div className="p-3 bg-[#f8fbf3] border-t border-[#e7f0dc]">
+                    <p className="text-sm text-[#506a3a]"><span className="font-medium">Prompt:</span> {prompt}</p>
+                </div>
+            )}
+        </div>
+    );
+
+    // 广告组件
+    const AdModal = ({ isPreGenAd = true, onClose, onAdClick }: {
+        isPreGenAd?: boolean,
+        onClose: () => void,
+        onAdClick: () => void
+    }) => (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70">
+            <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl relative">
+                {/* 关闭按钮 */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 mb-4 rounded-full bg-[#e7f0dc] flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-[#1c4c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 text-[#1c4c3b]">Support Our Service</h3>
+
+                    <p className="text-[#506a3a] mb-6">
+                        {isPreGenAd
+                            ? "To generate Ghibli images, please view a quick ad. This helps us cover AI costs and keep our tool free for everyone. Thank you for your support!"
+                            : "Your image is ready! Please view a quick ad to reveal it. Your support helps keep our AI service free and accessible."}
+                    </p>
+
+                    <div className="flex flex-col w-full space-y-3">
+                        <button
+                            onClick={onAdClick}
+                            className="px-4 py-3 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition w-full flex items-center justify-center"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            </svg>
+                            {isPreGenAd ? 'View Ad to Continue' : 'View Ad to Reveal Image'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-[#f5f9ee]">
+            {/* 添加广告模态框 */}
+            {showPreGenAd && (
+                <AdModal
+                    isPreGenAd={true}
+                    onClose={() => handleCloseAd(true)}
+                    onAdClick={() => handleAdClick(true)}
+                />
+            )}
+
+            {showPostGenAd && (
+                <AdModal
+                    isPreGenAd={false}
+                    onClose={() => handleCloseAd(false)}
+                    onAdClick={() => handleAdClick(false)}
+                />
             )}
 
             {/* 添加图片查看器模态框 */}
@@ -106,7 +531,7 @@ const HomePage = () => {
                         <a href="#examples" className="text-[#506a3a] hover:text-[#1c4c3b] transition">Examples</a>
                         <a href="#faq" className="text-[#506a3a] hover:text-[#1c4c3b] transition">FAQ</a>
                     </nav>
-                    <div className="flex items-center space-x-4">
+                    {/* <div className="flex items-center space-x-4">
                         <select className="bg-transparent border-none text-sm text-[#506a3a]" aria-label="Select Language">
                             <option value="en">English</option>
                             <option value="zh">中文</option>
@@ -114,7 +539,7 @@ const HomePage = () => {
                         <button className="bg-[#1c4c3b] text-white px-3 py-1 text-sm rounded-lg hover:bg-[#2a6854] transition">
                             Login
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </header>
 
@@ -123,74 +548,139 @@ const HomePage = () => {
                 <section className="container mx-auto px-4 py-16 text-center">
                     <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#1c4c3b]">Generate Ghibli Style Image</h1>
                     <p className="text-xl md:text-2xl text-[#506a3a] mb-6 max-w-3xl mx-auto">
-                        Create stunning Miyazaki-style AI-generated images in seconds
+                        Convert image to Studio Ghibli-style in seconds
                     </p>
                     <p className="text-md text-[#506a3a] mb-12 max-w-3xl mx-auto">
-                        Powered by ChatGPT-4o technology | Free, fast, and incredibly accurate
+                        Powered by ChatGPT-4o | Free, fast, and incredibly accurate
                     </p>
                     <div className="bg-[#e7f0dc] p-6 rounded-xl max-w-4xl mx-auto shadow-lg border border-[#89aa7b]">
                         <h2 className="text-2xl font-bold mb-6 text-[#1c4c3b]">Studio Ghibli AI Image Generator</h2>
 
+                        {/* 上传图片区域 */}
                         <div className="mb-6">
-                            <textarea
-                                className="w-full p-4 border border-[#89aa7b] rounded-lg focus:ring-2 focus:ring-[#1c4c3b] focus:border-transparent resize-none bg-white/90"
-                                rows={3}
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                placeholder="Enter your chatgpt ghibli prompt (e.g., A small countryside town in Ghibli style, sunset, with a winding path leading to a castle in the distance)"
-                            />
+                            <div className="p-4 border-2 border-dashed border-[#89aa7b] rounded-lg bg-white/90 text-center cursor-pointer" onClick={triggerFileInput}>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    onChange={handleImageUpload}
+                                />
+
+                                {uploadedImage ? (
+                                    <div className="relative max-h-64 overflow-hidden">
+                                        <img
+                                            src={uploadedImage}
+                                            alt="Uploaded image"
+                                            className="mx-auto max-h-64 object-contain"
+                                        />
+                                        <div className="absolute bottom-0 right-0 m-2">
+                                            <button
+                                                className="bg-white/80 p-1 rounded-full text-[#1c4c3b] hover:bg-white transition"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setUploadedImage(null);
+                                                }}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-[#89aa7b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p className="mt-4 text-[#506a3a]">Click to upload an image or drag & drop</p>
+                                        <p className="text-sm text-[#506a3a] mt-1">PNG, JPG, WEBP up to 2MB</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="flex flex-col items-center">
-                                <button className="w-full py-2 border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]">
-                                    Square Ratio
-                                </button>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <button className="w-full py-2 border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]">
-                                    Vibrant Colors
-                                </button>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <button className="w-full py-2 border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]">
-                                    Soft Lighting
-                                </button>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <button className="w-full py-2 border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]">
-                                    Dreamlike
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between mb-6">
-                            <button className="px-4 py-2 border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]">
-                                Advanced Settings
+                        {/* 按钮区域 */}
+                        <div className="flex justify-center mb-6">
+                            <button
+                                className={`px-6 py-3 bg-[#1c4c3b] text-white text-lg rounded-lg hover:bg-[#2a6854] transition ${isGenerating || !uploadedImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={handleGenerateClick}
+                                disabled={isGenerating || !uploadedImage}
+                            >
+                                {isGenerating ? 'Generating...' : 'Generate Ghibli Style Image'}
                             </button>
-                            <div className="flex space-x-4">
-                                <button className="px-4 py-2 border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]">
-                                    Clear
-                                </button>
-                                <button
-                                    className="px-4 py-2 border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]"
-                                    onClick={handleRandomPrompt}
-                                >
-                                    Random
-                                </button>
-                                <button
-                                    className="px-4 py-2 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition"
-                                    onClick={handleGenerateClick}
-                                >
-                                    Generate
-                                </button>
-                            </div>
                         </div>
+
                         <p className="text-sm text-[#506a3a] mt-4">
-                            Powered by <span className="font-semibold">ChatGPT-4o technology</span> | Create ghibli image chatgpt with stunning detail
+                            Powered by <span className="font-semibold">ChatGPT-4o technology</span> | Free, fast, and incredibly accurate
                         </p>
                     </div>
                 </section>
+
+                {/* 生成结果区域 */}
+                {(isGenerating || generatedImage || generationError) && (
+                    <section className="container mx-auto px-4 py-8">
+                        <h2 className="text-2xl font-bold mb-6 text-center text-[#1c4c3b]">Your Ghibli Transformation</h2>
+
+                        {isGenerating && (
+                            <div className="flex justify-center items-center p-12">
+                                <div className="relative inline-flex">
+                                    <div className="w-16 h-16 border-4 border-[#e7f0dc] border-t-[#1c4c3b] rounded-full animate-spin"></div>
+                                    <span className="sr-only">Loading...</span>
+                                </div>
+                                <p className="ml-4 text-lg text-[#1c4c3b]">Creating Ghibli magic...</p>
+                            </div>
+                        )}
+
+                        {generationError && (
+                            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center text-red-700 mb-6">
+                                {generationError}
+                            </div>
+                        )}
+
+                        {generatedImage && uploadedImage && !isGenerating && (
+                            <div className="max-w-4xl mx-auto relative">
+                                {/* 添加模糊效果覆盖层 */}
+                                {isResultBlurred && (
+                                    <div className="absolute inset-0 backdrop-blur-md z-10 flex items-center justify-center">
+                                        <div className="p-4 bg-white/70 rounded-lg shadow-lg">
+                                            <p className="text-lg font-medium text-[#1c4c3b]">Your image is ready!</p>
+                                        </div>
+                                    </div>
+                                )}
+                                <ImageComparisonCard
+                                    original={uploadedImage}
+                                    ghibli={generatedImage}
+                                />
+                            </div>
+                        )}
+                    </section>
+                )}
+
+                {/* 历史记录区域 */}
+                {history.length > 0 && (
+                    <section className="container mx-auto px-4 py-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-[#1c4c3b]">Your Ghibli Gallery</h2>
+                            <button
+                                onClick={clearHistory}
+                                className="px-3 py-1 text-sm border border-[#89aa7b] rounded-lg hover:bg-[#d5e6c3] transition text-[#506a3a]"
+                            >
+                                Clear History
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {history.map((item, index) => (
+                                <ImageComparisonCard
+                                    key={index}
+                                    original={item.originalImage}
+                                    ghibli={item.ghibliImage}
+                                    prompt={item.prompt}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* 添加关于Ghibli风格的介绍部分 */}
                 <section id="about" className="container mx-auto px-4 py-16">
