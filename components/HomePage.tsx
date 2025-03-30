@@ -215,11 +215,12 @@ const HomePage = () => {
             const ctx = canvas.getContext('2d');
 
             // 加载两张图片
-            const img1 = new Image();
-            const img2 = new Image();
+            const img_ori = document.createElement('img');
+            const img_ghi = document.createElement('img');
 
-            img1.crossOrigin = 'anonymous'; // 处理跨域问题
-            img2.crossOrigin = 'anonymous'; // 处理跨域问题
+            // 创建加载图片的Promise
+            img_ori.crossOrigin = 'anonymous'; // 处理跨域问题
+            img_ghi.crossOrigin = 'anonymous'; // 处理跨域问题
 
             // 创建加载图片的Promise
             const loadImage = (img: HTMLImageElement, src: string) => {
@@ -231,16 +232,22 @@ const HomePage = () => {
             };
 
             Promise.all([
-                loadImage(img1, original),
-                loadImage(img2, ghibli)
+                loadImage(img_ori, original),
+                loadImage(img_ghi, ghibli)
             ]).then(() => {
                 // 设置画布大小为两张图片并排
-                canvas.width = img1.width + img2.width;
-                canvas.height = Math.max(img1.height, img2.height);
+                canvas.width = 2 * img_ghi.width;
+                canvas.height = img_ghi.height;
 
                 // 绘制两张图片
-                ctx?.drawImage(img1, 0, 0);
-                ctx?.drawImage(img2, img1.width, 0);
+                ctx!.drawImage(img_ori, 0, 0, img_ghi.width, img_ghi.height);
+                ctx!.drawImage(img_ghi, img_ghi.width, 0);
+
+                // 添加水印
+                ctx!.font = '40px Arial'; // 设置字体和大小
+                ctx!.fillStyle = 'rgba(255, 255, 255, 0.8)'; // 设置水印颜色为浅白色
+                ctx!.textAlign = 'right'; // 右对齐
+                ctx!.fillText('https://GhibliStyleImageGenerator.cc', canvas.width - 12, canvas.height - 12); // 在右下角绘制水印
 
                 // 转换为 Blob 并下载
                 canvas.toBlob((blob) => {
@@ -283,8 +290,8 @@ const HomePage = () => {
             }
 
             // 加载两张图片
-            const img1 = new Image();
-            const img2 = new Image();
+            const img1 = document.createElement('img');
+            const img2 = document.createElement('img');
 
             img1.crossOrigin = 'anonymous';
             img2.crossOrigin = 'anonymous';
