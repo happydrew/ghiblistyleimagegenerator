@@ -205,7 +205,7 @@ const config: DocsThemeConfig = {
         <meta property="og:title" content={title} />
         <meta name="description" content={description} />
         <meta property="og:description" content={description} />
-        <meta property="og:image" content={image || '/og-image.png'} />
+        <meta property="og:image" content={image || '/favicon.ico'} />
         {canonical && <link rel="canonical" href={canonical} />}
 
         <meta name="msapplication-TileColor" content="#fff" />
