@@ -205,11 +205,11 @@ const config: DocsThemeConfig = {
         <meta property="og:title" content={title} />
         <meta name="description" content={description} />
         <meta property="og:description" content={description} />
-        <meta property="og:image" content={image || '/favicon.ico'} />
+        <meta property="og:image" content={image || '/og-image.png'} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={image || '/favicon.ico'} />
+        <meta name="twitter:image" content={image || '/og-image.png'} />
         {canonical && <link rel="canonical" href={canonical} />}
 
         <meta httpEquiv="Content-Language" content="en" />
