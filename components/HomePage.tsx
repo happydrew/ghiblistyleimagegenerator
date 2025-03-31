@@ -30,6 +30,7 @@ const HomePage = () => {
     const [showPostGenAd, setShowPostGenAd] = useState(false);
     const [isResultBlurred, setIsResultBlurred] = useState(false);
     const [pendingGeneration, setPendingGeneration] = useState(false);
+    // const [showAd, setShowAd] = useState(false);
 
     // 示例提示词
     const examplePrompts = [
@@ -38,6 +39,13 @@ const HomePage = () => {
         "A magical forest with spirits and soft glowing lights in Miyazaki style",
         "An oceanic scene with flying machines and fluffy clouds in Ghibli aesthetic"
     ];
+
+    // useEffect(() => {
+    //     // 显示广告
+    //     setTimeout(() => {
+    //         setShowAd(true);
+    //     }, 10000);
+    // }, []);
 
     // 加载历史记录
     useEffect(() => {
@@ -453,8 +461,8 @@ const HomePage = () => {
     };
 
     // 图片比较组件
-    const ImageComparisonCard = ({ original, ghibli, prompt }: { original: string, ghibli: string, prompt?: string }) => (
-        <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-[#89aa7b] mb-8">
+    const ImageComparisonCard = ({ id, data_type, original, ghibli, prompt }: { id?: string, data_type?: string, original: string, ghibli: string, prompt?: string }) => (
+        <div {...(id && { id })} {...(data_type && { "data-type": data_type })} className="bg-white rounded-xl overflow-hidden shadow-lg border border-[#89aa7b] mb-8">
             <div className="p-4 bg-[#e7f0dc] flex justify-between items-center">
                 <h3 className="text-lg font-bold text-[#1c4c3b]">Ghibli Style Transformation</h3>
                 <div className="flex space-x-2">
@@ -619,104 +627,84 @@ const HomePage = () => {
                 </div>
             )}
 
-            {/* 导航栏 */}
-            {/* <header className="fixed top-0 left-0 h-[4rem] right-0 z-50 bg-[#e7f0dc]/90 backdrop-blur-sm border-b border-[#89aa7b]">
-                <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                        <Image src="/favicon.ico" alt="Ghibli Style AI Generator Logo" width={40} height={40} className="rounded-lg" />
-                        <h1 className="text-lg font-bold text-[#1c4c3b]">Generate Ghibli Style Image</h1>
-                    </div>
-                    <nav className="hidden md:flex items-center space-x-8">
-                        <a href="#about" className="text-[#506a3a] hover:text-[#1c4c3b] transition">About</a>
-                        <a href="#features" className="text-[#506a3a] hover:text-[#1c4c3b] transition">Features</a>
-                        <a href="#examples" className="text-[#506a3a] hover:text-[#1c4c3b] transition">Examples</a>
-                        <a href="#faq" className="text-[#506a3a] hover:text-[#1c4c3b] transition">FAQ</a>
-                    </nav>
-                    <div className="flex items-center space-x-4">
-                        <select className="bg-transparent border-none text-sm text-[#506a3a]" aria-label="Select Language">
-                            <option value="en">English</option>
-                            <option value="zh">中文</option>
-                        </select>
-                        <button className="bg-[#1c4c3b] text-white px-3 py-1 text-sm rounded-lg hover:bg-[#2a6854] transition">
-                            Login
-                        </button>
-                    </div>
-                </div>
-            </header> */}
-
             <main className="pt-16">
                 {/* 英雄区域 */}
-                <section className="container mx-auto px-4 py-16 text-center">
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#1c4c3b]">Generate Ghibli Style Image</h1>
-                    <p className="text-xl md:text-2xl text-[#506a3a] mb-6 max-w-3xl mx-auto">
-                        Convert image to Studio Ghibli-style in seconds
-                    </p>
-                    <p className="text-md text-[#506a3a] mb-12 max-w-3xl mx-auto">
-                        Powered by ChatGPT-4o | Free, fast, and incredibly accurate
-                    </p>
-                    <div className="bg-[#e7f0dc] p-6 rounded-xl max-w-4xl mx-auto shadow-lg border border-[#89aa7b]">
-                        <h2 className="text-2xl font-bold mb-6 text-[#1c4c3b]">Studio Ghibli AI Image Generator</h2>
-
-                        {/* 上传图片区域 */}
-                        <div className="mb-6">
-                            <div className="p-4 border-2 border-dashed border-[#89aa7b] rounded-lg bg-white/90 text-center cursor-pointer" onClick={triggerFileInput}>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    ref={fileInputRef}
-                                    onChange={handleImageUpload}
-                                />
-
-                                {uploadedImage ? (
-                                    <div className="relative max-h-64 overflow-hidden">
-                                        <img
-                                            src={uploadedImage}
-                                            alt="Uploaded image"
-                                            className="mx-auto max-h-64 object-contain"
-                                        />
-                                        <div className="absolute bottom-0 right-0 m-2">
-                                            <button
-                                                className="bg-white/80 p-1 rounded-full text-[#1c4c3b] hover:bg-white transition"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setUploadedImage(null);
-                                                }}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-[#89aa7b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <p className="mt-4 text-[#506a3a]">Click to upload an image or drag & drop</p>
-                                        <p className="text-sm text-[#506a3a] mt-1">PNG, JPG, WEBP up to 2MB</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* 按钮区域 */}
-                        <div className="flex justify-center mb-6">
-                            <button
-                                className={`px-6 py-3 bg-[#1c4c3b] text-white text-lg rounded-lg hover:bg-[#2a6854] transition ${isGenerating || !uploadedImage ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                onClick={handleGenerateClick}
-                                disabled={isGenerating || !uploadedImage}
-                            >
-                                {isGenerating ? 'Generating...' : 'Generate Ghibli Style Image'}
-                            </button>
-                        </div>
-
-                        <p className="text-sm text-[#506a3a] mt-4">
-                            Powered by <span className="font-semibold">ChatGPT-4o technology</span> | Free, fast, and incredibly accurate
+                <div id="hero_containter" className='w-full flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12'>
+                    <div data-banner-id="1444036"></div>
+                    <section className="w-full md:max-w-auto container mx-auto px-4 py-16 text-center">
+                        <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#1c4c3b]">Generate Ghibli Style Image</h1>
+                        <p className="text-xl md:text-2xl text-[#506a3a] mb-6 max-w-3xl mx-auto">
+                            Convert image to Studio Ghibli-style in seconds
                         </p>
-                    </div>
-                </section>
+                        <p className="text-md text-[#506a3a] mb-12 max-w-3xl mx-auto">
+                            Powered by ChatGPT-4o | Free, fast, and incredibly accurate
+                        </p>
+                        <div className="bg-[#e7f0dc] p-6 rounded-xl max-w-4xl mx-auto shadow-lg border border-[#89aa7b]">
+                            <h2 className="text-2xl font-bold mb-6 text-[#1c4c3b]">Studio Ghibli AI Image Generator</h2>
+
+                            {/* 上传图片区域 */}
+                            <div className="mb-6">
+                                <div className="p-4 border-2 border-dashed border-[#89aa7b] rounded-lg bg-white/90 text-center cursor-pointer" onClick={triggerFileInput}>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        ref={fileInputRef}
+                                        onChange={handleImageUpload}
+                                    />
+
+                                    {uploadedImage ? (
+                                        <div className="relative max-h-64 overflow-hidden">
+                                            <img
+                                                src={uploadedImage}
+                                                alt="Uploaded image"
+                                                className="mx-auto max-h-64 object-contain"
+                                            />
+                                            <div className="absolute bottom-0 right-0 m-2">
+                                                <button
+                                                    className="bg-white/80 p-1 rounded-full text-[#1c4c3b] hover:bg-white transition"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setUploadedImage(null);
+                                                    }}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-[#89aa7b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <p className="mt-4 text-[#506a3a]">Click to upload an image or drag & drop</p>
+                                            <p className="text-sm text-[#506a3a] mt-1">PNG, JPG, WEBP up to 2MB</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 按钮区域 */}
+                            <div className="flex justify-center mb-6">
+                                <button
+                                    className={`px-6 py-3 bg-[#1c4c3b] text-white text-lg rounded-lg hover:bg-[#2a6854] transition ${isGenerating || !uploadedImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={handleGenerateClick}
+                                    disabled={isGenerating || !uploadedImage}
+                                >
+                                    {isGenerating ? 'Generating...' : 'Generate Ghibli Style Image'}
+                                </button>
+                            </div>
+
+                            <p className="text-sm text-[#506a3a] mt-4">
+                                Powered by <span className="font-semibold">ChatGPT-4o technology</span> | Free, fast, and incredibly accurate
+                            </p>
+                        </div>
+                    </section>
+                    <div data-banner-id="1444051"></div>
+                </div>
+
 
                 {/* 生成结果区域 */}
                 {(isGenerating || generatedImage || generationError) && (
@@ -756,6 +744,8 @@ const HomePage = () => {
                                     </div>
                                 )}
                                 <ImageComparisonCard
+                                    id="generated-image-comparison-card"
+                                    data-type="generated-image-comparison-card"
                                     original={uploadedImage}
                                     ghibli={generatedImage}
                                 />
