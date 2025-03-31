@@ -90,9 +90,9 @@ const HomePage = () => {
             return;
         }
 
-        // 检查文件大小 (限制为 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            alert('Image size should be less than 2MB');
+        // 检查文件大小 (限制为 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
             return;
         }
 
@@ -680,7 +680,7 @@ const HomePage = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                             <p className="mt-4 text-[#506a3a]">Click to upload an image or drag & drop</p>
-                                            <p className="text-sm text-[#506a3a] mt-1">PNG, JPG, WEBP up to 2MB</p>
+                                            <p className="text-sm text-[#506a3a] mt-1">PNG, JPG, WEBP up to 5MB</p>
                                         </div>
                                     )}
                                 </div>
