@@ -630,7 +630,7 @@ const HomePage = () => {
             <main className="pt-16">
                 {/* 英雄区域 */}
                 <div id="hero_containter" className='w-full flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12'>
-                    <div data-banner-id="1444036"></div>
+                    {/* <div data-banner-id="1444036"></div> */}
                     <section className="w-full md:max-w-auto container mx-auto px-4 py-16 text-center">
                         <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#1c4c3b]">Generate Ghibli Style Image</h1>
                         <p className="text-xl md:text-2xl text-[#506a3a] mb-6 max-w-3xl mx-auto">
@@ -702,7 +702,7 @@ const HomePage = () => {
                             </p>
                         </div>
                     </section>
-                    <div data-banner-id="1444051"></div>
+                    {/* <div data-banner-id="1444051"></div> */}
                 </div>
 
 
