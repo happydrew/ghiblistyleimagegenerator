@@ -30,16 +30,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const replicate_image = `data:application/octet-stream;base64,${image}`;
         const input = {
             image: replicate_image,
-            prompt: "recreate this image in ghibli style",
-            lora_scale: 1.1,
-            output_format: "jpg",
-            output_quality: 70,
-            prompt_strength: 0.4,
-            guidance_scale: 5,
+            prompt: "GHBLI anime style photo",
+            prompt_strength: 0.55,
+            num_inference_steps:38,
+            guidance_scale:10,
+            lora_scale: 1.05,
+            output_quality: 80,
             go_fast: true
         };
 
-        const output = await replicate.run("colinmcdonnell22/ghiblify-3:407b7fd425e00eedefe7db3041662a36a126f1e4988e6fbadfc49b157159f015", { input });
+        const output = await replicate.run("aaronaftab/mirage-ghibli:166efd159b4138da932522bc5af40d39194033f587d9bdbab1e594119eae3e7f", { input });
 
         if (Object.entries(output).length > 0) {
             return res.status(200).json({
