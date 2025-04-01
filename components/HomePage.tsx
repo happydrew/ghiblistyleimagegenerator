@@ -144,9 +144,68 @@ const HomePage = () => {
             return;
         }
 
+        // 开始生成过程
+        setIsGenerating(true);
+        setGenerationError('');
+
+        try {
+            // 移除 base64 字符串的前缀部分
+            const base64WithoutPrefix = uploadedImage!.split(',')[1];
+
+            // 调用后端API生成图片
+            const response = await fetch('/api/generate-ghibli', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    image: base64WithoutPrefix,
+                })
+            });
+
+            if (response.ok) {
+                const responseData = await response.json();
+                // 确保使用正确的属性路径获取图片数据
+                const ghibliImage = responseData.ghibliImage;
+                setIsGenerating(false);
+                setGeneratedImage(ghibliImage);
+                const img = document.createElement('img');
+                img.crossOrigin = 'anonymous'; // 处理跨域问题
+                img.onload = () => {
+                    // 转换为 WebP 格式
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, img.width, img.height);
+                        // 转换为 WebP 格式
+                        const img_base64 = canvas.toDataURL('image/jpeg');
+                        setGeneratedImage(img_base64);
+                        addToHistory(uploadedImage, img_base64);
+                    }
+                    canvas.remove();
+                    img.remove();
+                }
+                img.src = ghibliImage;
+
+                // 设置模糊效果并显示生成后广告
+                // setIsResultBlurred(true);
+                // setShowPostGenAd(true);
+            } else {
+                setGenerationError('Failed to generate image. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error generating image:', error);
+            setGenerationError('An error occurred. Please try again later.');
+        } finally {
+            setIsGenerating(false);
+        }
+
+
         // 显示生成前广告
-        setShowPreGenAd(true);
-        setPendingGeneration(true);
+        // setShowPreGenAd(true);
+        // setPendingGeneration(true);
     };
 
     // 修改处理广告的函数

@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import type { DocsThemeConfig } from 'nextra-theme-docs'
 import { useConfig, ThemeSwitch } from 'nextra-theme-docs'
 import NextLink from 'next/link'
-import { GitHubIcon, DiscordIcon, StackOverflowIcon, TwitterIcon } from '@components/icons'
+import { GitHubIcon, DiscordIcon, StackOverflowIcon, TwitterIcon, YouTubeIcon } from '@components/icons'
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
 
@@ -124,10 +124,11 @@ function Footer() {
         <div className="flex flex-col gap-4 lg:items-end">
           <ul className="flex gap-5">
             {[
-              { url: "https://github.com/happydrew", icon: GitHubIcon },
+              { url: "https://github.com/ghiblistyleimagegenerator", icon: GitHubIcon },
               { url: "", icon: DiscordIcon },
-              { url: "https://x.com/happydrewgrant", icon: TwitterIcon },
+              { url: "https://x.com/ghiblistylify", icon: TwitterIcon },
               { url: "", icon: StackOverflowIcon },
+              { url: "https://www.youtube.com/@ghiblistyleimagegenerator", icon: YouTubeIcon },
             ].map(({ url, icon: Icon }) => (
               <li key={url}>
                 <a
