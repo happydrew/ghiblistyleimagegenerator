@@ -124,7 +124,7 @@ function Footer() {
         <div className="flex flex-col gap-4 lg:items-end">
           <ul className="flex gap-5">
             {[
-              { url: "https://github.com/ghiblistyleimagegenerator", icon: GitHubIcon },
+              { url: "https://github.com/happydrew", icon: GitHubIcon },
               { url: "", icon: DiscordIcon },
               { url: "https://x.com/ghiblistylify", icon: TwitterIcon },
               { url: "", icon: StackOverflowIcon },
