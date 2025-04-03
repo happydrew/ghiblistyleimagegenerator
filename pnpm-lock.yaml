@@ -14,6 +14,9 @@ importers:
       '@emotion/styled':
         specifier: ^11.13.5
         version: 11.13.5(@emotion/react@11.13.5(@types/react@18.3.12)(react@18.3.1))(@types/react@18.3.12)(react@18.3.1)
+      '@marsidev/react-turnstile':
+        specifier: ^0.5.3
+        version: 0.5.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mui/material':
         specifier: ^6.1.8
         version: 6.1.8(@emotion/react@11.13.5(@types/react@18.3.12)(react@18.3.1))(@emotion/styled@11.13.5(@emotion/react@11.13.5(@types/react@18.3.12)(react@18.3.1))(@types/react@18.3.12)(react@18.3.1))(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -916,6 +919,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@marsidev/react-turnstile@0.5.4':
+    resolution: {integrity: sha512-cloUDkEcJm+G7p3J8DwPtRNNB2GZqVi/nlIbgu9o3VzNyV5K/bWcSfOyWouRiR3umAQZmsFpR3OFYa4mCmy4AQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   '@mdx-js/mdx@3.1.0':
     resolution: {integrity: sha512-/QxEhPAvGwbQmy1Px8F899L5Uc2KZ6JtXwlCgJmjSTBedwOZkByYcBG4GceIGPXRDsmfxhHazuS+hlOShRLeDw==}
@@ -5572,6 +5581,11 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@marsidev/react-turnstile@0.5.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@mdx-js/mdx@3.1.0(acorn@8.13.0)':
     dependencies:

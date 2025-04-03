@@ -18,13 +18,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const image: string = req.body.image;
+    const { image, turnstileToken } = req.body;
 
-    if (!image) {
-        return res.status(400).json({ error: 'Image is required' });
+    if (!image || !turnstileToken) {
+        return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // 验证 Turnstile token
     try {
+        const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                secret: process.env.TURNSTILE_SECRET_KEY,  // 在环境变量中设置
+                response: turnstileToken,
+            }),
+        });
+
+        const turnstileData = await turnstileRes.json();
+
+        if (!turnstileData.success) {
+            return res.status(400).json({ error: 'Invalid security token' });
+        }
+
         // 使用 Replicate 生成图像
         const replicate = new Replicate();
         const replicate_image = `data:application/octet-stream;base64,${image}`;
@@ -32,8 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             image: replicate_image,
             prompt: "GHBLI anime style photo",
             prompt_strength: 0.55,
-            num_inference_steps:38,
-            guidance_scale:10,
+            num_inference_steps: 38,
+            guidance_scale: 10,
             lora_scale: 1.05,
             output_quality: 80,
             go_fast: true

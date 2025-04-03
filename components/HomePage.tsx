@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { convertPngToWebp } from '@lib/utils'
+import { Turnstile } from '@marsidev/react-turnstile';
 
 // 自定义组件
 import { Tag } from '../components';
@@ -30,7 +31,8 @@ const HomePage = () => {
     const [showPostGenAd, setShowPostGenAd] = useState(false);
     const [isResultBlurred, setIsResultBlurred] = useState(false);
     const [pendingGeneration, setPendingGeneration] = useState(false);
-    // const [showAd, setShowAd] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string>('');
+    const [showTurnstile, setShowTurnstile] = useState(false);
 
     // 示例提示词
     const examplePrompts = [
@@ -138,21 +140,33 @@ const HomePage = () => {
         fileInputRef.current?.click();
     };
 
+    const handleTurnstileSuccess = (token: string) => {
+        setTurnstileToken(token);
+        if (token) {
+            executeGeneration(token);
+        }
+    };
+
     const handleGenerateClick = async () => {
         if (!uploadedImage) {
             alert('Please upload an image first');
             return;
         }
 
-        // 开始生成过程
+        setShowTurnstile(true);
+        setPendingGeneration(true);
+    };
+
+    const executeGeneration = async (token: string) => {
+        if (!uploadedImage) return;
+
         setIsGenerating(true);
         setGenerationError('');
+        setShowTurnstile(false);
 
         try {
-            // 移除 base64 字符串的前缀部分
             const base64WithoutPrefix = uploadedImage!.split(',')[1];
 
-            // 调用后端API生成图片
             const response = await fetch('/api/generate-ghibli', {
                 method: 'POST',
                 headers: {
@@ -160,6 +174,7 @@ const HomePage = () => {
                 },
                 body: JSON.stringify({
                     image: base64WithoutPrefix,
+                    turnstileToken: token
                 })
             });
 
@@ -200,6 +215,7 @@ const HomePage = () => {
             setGenerationError('An error occurred. Please try again later.');
         } finally {
             setIsGenerating(false);
+            setPendingGeneration(false);
         }
 
 
@@ -336,7 +352,7 @@ const HomePage = () => {
 
                 ctx.drawImage(img, 0, 0);
                 // 添加水印
-                ctx!.font = '40px Arial'; // 设置字体和大小
+                ctx!.font = '36px Arial'; // 设置字体和大小
                 ctx!.fillStyle = 'rgba(255, 255, 255, 0.8)'; // 设置水印颜色为浅白色
                 ctx!.textAlign = 'right'; // 右对齐
                 ctx!.fillText('https://GhibliStyleImageGenerator.cc', canvas.width - 12, canvas.height - 12); // 在右下角绘制水印
@@ -686,6 +702,42 @@ const HomePage = () => {
                 </div>
             )}
 
+            {/* Turnstile验证模态框 */}
+            {showTurnstile && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70">
+                    <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl relative">
+                        {/* 关闭按钮 */}
+                        <button
+                            onClick={() => {
+                                setShowTurnstile(false);
+                                setPendingGeneration(false);
+                            }}
+                            className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div className="flex flex-col items-center text-center">
+                            <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Security Verification</h3>
+                            <p className="text-[#506a3a] mb-4">
+                                Please complete the security check to generate your image.
+                            </p>
+
+                            <div className="mb-4">
+                                <Turnstile
+                                    siteKey="0x4AAAAAABDqaLqpWZbP4Ed_"  // 替换为您的实际site key
+                                    onSuccess={handleTurnstileSuccess}
+                                    onError={() => setTurnstileToken('')}
+                                    onExpire={() => setTurnstileToken('')}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <main className="pt-16">
                 {/* 英雄区域 */}
                 <div id="hero_containter" className='w-full flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12'>
@@ -747,12 +799,21 @@ const HomePage = () => {
 
                             {/* 按钮区域 */}
                             <div className="flex justify-center mb-6">
+                                {/* <div className="mb-4">
+                                    <Turnstile
+                                        siteKey="0x4AAAAAABDqaLqpWZbP4Ed_"
+                                        onSuccess={handleTurnstileSuccess}
+                                        onError={() => setTurnstileToken('')}
+                                        onExpire={() => setTurnstileToken('')}
+                                    />
+                                </div> */}
                                 <button
-                                    className={`px-6 py-3 bg-[#1c4c3b] text-white text-lg rounded-lg hover:bg-[#2a6854] transition ${isGenerating || !uploadedImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`px-6 py-3 bg-[#1c4c3b] text-white text-lg rounded-lg hover:bg-[#2a6854] transition ${isGenerating || !uploadedImage || pendingGeneration ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
                                     onClick={handleGenerateClick}
-                                    disabled={isGenerating || !uploadedImage}
+                                    disabled={isGenerating || !uploadedImage || pendingGeneration}
                                 >
-                                    {isGenerating ? 'Generating...' : 'Generate Ghibli Style Image'}
+                                    {isGenerating ? 'Generating...' : pendingGeneration ? 'Verifying...' : 'Generate Ghibli Style Image'}
                                 </button>
                             </div>
 
