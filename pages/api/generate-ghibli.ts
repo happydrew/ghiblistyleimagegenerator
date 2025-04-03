@@ -14,6 +14,11 @@ export const config = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
+    const clientIp = req.headers["x-forwarded-for"] ?
+        (req.headers["x-forwarded-for"] as string).split(",")[0] : req.socket.remoteAddress;
+
+    console.log(`request ip: ${clientIp}`);
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
