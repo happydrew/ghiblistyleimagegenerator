@@ -6,7 +6,6 @@ import { Turnstile } from '@marsidev/react-turnstile';
 
 // 自定义组件
 import { Tag } from '../components';
-import LoginButton from './LoginButton';
 
 // 定义历史记录类型
 interface HistoryItem {
@@ -665,18 +664,7 @@ const HomePage = () => {
 
     return (
         <div className="min-h-screen bg-[#f5f9ee]">
-            {/* 添加导航栏 */}
-            <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                        <Image src="/logo.png" alt="Logo" width={32} height={32} className="rounded-lg" />
-                        <h1 className="text-lg font-bold text-[#1c4c3b]">Ghibli Style</h1>
-                    </div>
-                    <LoginButton />
-                </div>
-            </header>
-
-            {/* 其余广告模态框 */}
+            {/* 添加广告模态框 */}
             {showPreGenAd && (
                 <AdModal
                     isPreGenAd={true}

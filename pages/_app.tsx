@@ -4,8 +4,6 @@ import Script from 'next/script';
 import Head from 'next/head';
 import '../style.css';
 import { useEffect } from 'react';
-import { AuthProvider } from '../contexts/AuthContext';
-import GoogleOneTapPrompt from '../components/GoogleOneTapPrompt';
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
   // useEffect(() => {
@@ -56,9 +54,6 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
       `}
     </Script>
 
-    <AuthProvider>
-      <GoogleOneTapPrompt />
-      <Component {...pageProps} />
-    </AuthProvider>
+    <Component {...pageProps} />
   </>)
 }
