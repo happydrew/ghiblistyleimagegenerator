@@ -15,13 +15,20 @@ export const config = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     if (req.method !== 'POST') {
+        console.log('Method not allowed, Method:', req.method);
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     const { image, turnstileToken } = req.body;
 
-    if (!image || !turnstileToken) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (!turnstileToken) {
+        console.log('Missing turnstileToken');
+        return res.status(400).json({ error: 'Missing turnstileToken' });
+    }
+
+    if (!image) {
+        console.log('Missing image');
+        return res.status(400).json({ error: 'Missing image' });
     }
 
     // 验证 Turnstile token
