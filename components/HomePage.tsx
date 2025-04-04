@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Head from 'next/head';
 import Image from 'next/image';
-import { convertPngToWebp } from '@lib/utils'
 import { Turnstile } from '@marsidev/react-turnstile';
-
-// 自定义组件
-import { Tag } from '../components';
+import { checkFreeUsage, useOneFreeGeneration } from '@lib/usageChecker';
+// 修正导入
+import { useAuth } from '@/contexts/AuthContext';
+import { access } from 'fs';
+// 移除 HashRouter 相关导入
+// import { HashRouter } from "react-router-dom";
 
 // 定义历史记录类型
 interface HistoryItem {
@@ -15,8 +16,12 @@ interface HistoryItem {
     prompt?: string;
 }
 
+const MAX_FREE = 3;
+
 const HomePage = () => {
-    const [showModal, setShowModal] = useState(false);
+    // 使用AuthContext
+    const { user, credits, setIsLoginModalOpen, setLoginModalRedirectTo, getAccessToken } = useAuth();
+
     const [prompt, setPrompt] = useState('');
     const [selectedImage, setSelectedImage] = useState('');
     const [showImageViewer, setShowImageViewer] = useState(false);
@@ -33,6 +38,8 @@ const HomePage = () => {
     const [pendingGeneration, setPendingGeneration] = useState(false);
     const [turnstileToken, setTurnstileToken] = useState<string>('');
     const [showTurnstile, setShowTurnstile] = useState(false);
+    const [freeCredits, setFreeCredits] = useState(0);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // 示例提示词
     const examplePrompts = [
@@ -42,12 +49,18 @@ const HomePage = () => {
         "An oceanic scene with flying machines and fluffy clouds in Ghibli aesthetic"
     ];
 
-    // useEffect(() => {
-    //     // 显示广告
-    //     setTimeout(() => {
-    //         setShowAd(true);
-    //     }, 10000);
-    // }, []);
+    // 只在用户未登录时才检查免费使用次数
+    useEffect(() => {
+        if (!user) {
+            checkFreeUsage().then((freeUsage) => {
+                console.log('Free usage:', freeUsage);
+                setFreeCredits(MAX_FREE - freeUsage);
+            }).catch((error) => {
+                console.error('Failed to check usage:', error);
+                setFreeCredits(MAX_FREE);
+            });
+        }
+    }, [user]);
 
     // 加载历史记录
     useEffect(() => {
@@ -148,11 +161,22 @@ const HomePage = () => {
     };
 
     const handleGenerateClick = async () => {
+
         if (!uploadedImage) {
             alert('Please upload an image first');
             return;
         }
 
+        // 根据登录状态决定走哪个逻辑
+        if ((!user && freeCredits <= 0) || (user && credits <= 0)) {
+            // 未登录用户且免费额度已用完，或者已登录用户且账户额度已用完，弹出升级提示
+            setShowUpgradeModal(true);
+            return;
+        }
+
+        // executeGeneration("");
+
+        // 还有点数的用户可以继续生成
         setShowTurnstile(true);
         setPendingGeneration(true);
     };
@@ -164,8 +188,15 @@ const HomePage = () => {
         setGenerationError('');
         setShowTurnstile(false);
 
+        // useOnce();
+        // setIsGenerating(false);
+        // setPendingGeneration(false);
+        // return;
+
         try {
             const base64WithoutPrefix = uploadedImage!.split(',')[1];
+
+            const accessToken = await getAccessToken();
 
             const response = await fetch('/api/generate-ghibli', {
                 method: 'POST',
@@ -174,7 +205,8 @@ const HomePage = () => {
                 },
                 body: JSON.stringify({
                     image: base64WithoutPrefix,
-                    turnstileToken: token
+                    turnstileToken: token,
+                    accessToken
                 })
             });
 
@@ -204,6 +236,8 @@ const HomePage = () => {
                 }
                 img.src = ghibliImage;
 
+                useOnce();
+
                 // 设置模糊效果并显示生成后广告
                 // setIsResultBlurred(true);
                 // setShowPostGenAd(true);
@@ -223,6 +257,19 @@ const HomePage = () => {
         // setShowPreGenAd(true);
         // setPendingGeneration(true);
     };
+
+    const useOnce = () => {
+        // 根据登录状态决定扣减哪个系统的点数
+        if (!user) {
+            // 未登录用户，扣减免费点数
+            setFreeCredits(prev => prev - 1);
+            useOneFreeGeneration();
+        } else {
+            // 已登录用户，扣减账户点数（此功能稍后实现）
+            console.log('Deducting points from user account - to be implemented');
+            // 这里未来会调用扣减用户账户点数的API
+        }
+    }
 
     // 修改处理广告的函数
     const handleCloseAd = (isPreGenAd: boolean) => {
@@ -626,6 +673,7 @@ const HomePage = () => {
                 <button
                     onClick={onClose}
                     className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
+                    title="Close"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -662,8 +710,91 @@ const HomePage = () => {
         </div>
     );
 
+    // 升级计划模态框组件
+    const UpgradeModal = () => (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70">
+            <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl relative">
+                {/* 关闭按钮 */}
+                <button
+                    onClick={() => setShowUpgradeModal(false)}
+                    className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
+                    title="Close"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 mb-4 rounded-full bg-[#e7f0dc] flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#1c4c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 text-[#1c4c3b]">
+                        {user
+                            ? "Your Credits Have Been Used Up"
+                            : "You've Used All Your Free Credits"
+                        }
+                    </h3>
+
+                    <p className="text-[#506a3a] mb-2">
+                        {user
+                            ? "You don't have sufficient credits to generate more images. Please upgrade your plan to continue creating stunning Ghibli style images."
+                            : "You've used all your free image generations. Please log in and upgrade to a premium plan to continue creating amazing Ghibli style images."
+                        }
+                    </p>
+
+                    <p className="text-[#1c4c3b] font-medium mb-6">
+                        Premium plans start at just $1!
+                    </p>
+
+                    <div className="flex flex-col w-full space-y-3">
+                        {user ? (
+                            <button
+                                onClick={() => {
+                                    window.location.href = '/temp-purchase';
+                                    setShowUpgradeModal(false);
+                                }}
+                                className="px-4 py-3 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition w-full flex items-center justify-center"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                Upgrade Now
+                            </button>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => {
+                                        setLoginModalRedirectTo(`${window.location.origin}/temp-purchase`)
+                                        setIsLoginModalOpen(true); // 打开登录模态框
+                                        setShowUpgradeModal(false); // 关闭升级模态框
+                                    }}
+                                    className="px-4 py-3 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition w-full flex items-center justify-center"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                    </svg>
+                                    Log In to Continue
+                                </button>
+                                {/* <p className="text-sm text-[#506a3a] mt-2">
+                                    Don't have an account yet? <button onClick={() => window.location.href = '/signup'} className="text-[#1c4c3b] font-medium">Sign up now</button>
+                                </p> */}
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-[#f5f9ee]">
+
+            {/* 添加升级计划提示框 */}
+            {showUpgradeModal && <UpgradeModal />}
+
             {/* 添加广告模态框 */}
             {showPreGenAd && (
                 <AdModal
@@ -688,6 +819,7 @@ const HomePage = () => {
                         <button
                             className="absolute right-3 top-3 bg-white/30 rounded-full p-2 text-white hover:bg-white/50 transition z-10"
                             onClick={() => setShowImageViewer(false)}
+                            title="Close image viewer"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -713,6 +845,7 @@ const HomePage = () => {
                                 setPendingGeneration(false);
                             }}
                             className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
+                            title="Close verification"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -762,6 +895,8 @@ const HomePage = () => {
                                         className="hidden"
                                         ref={fileInputRef}
                                         onChange={handleImageUpload}
+                                        title="Upload image"
+                                        aria-label="Upload image"
                                     />
 
                                     {uploadedImage ? (
@@ -778,6 +913,7 @@ const HomePage = () => {
                                                         e.stopPropagation();
                                                         setUploadedImage(null);
                                                     }}
+                                                    title="Remove uploaded image"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -798,23 +934,32 @@ const HomePage = () => {
                             </div>
 
                             {/* 按钮区域 */}
-                            <div className="flex justify-center mb-6">
-                                {/* <div className="mb-4">
-                                    <Turnstile
-                                        siteKey="0x4AAAAAABDqaLqpWZbP4Ed_"
-                                        onSuccess={handleTurnstileSuccess}
-                                        onError={() => setTurnstileToken('')}
-                                        onExpire={() => setTurnstileToken('')}
-                                    />
-                                </div> */}
+                            <div className="flex flex-col justify-center mb-6 gap-2">
                                 <button
-                                    className={`px-6 py-3 bg-[#1c4c3b] text-white text-lg rounded-lg hover:bg-[#2a6854] transition ${isGenerating || !uploadedImage || pendingGeneration ? 'opacity-50 cursor-not-allowed' : ''
+                                    className={`w-auto px-6 py-3 bg-[#1c4c3b] text-white text-lg rounded-lg hover:bg-[#2a6854] transition ${isGenerating || !uploadedImage || pendingGeneration ? 'opacity-50 cursor-not-allowed' : ''
                                         }`}
                                     onClick={handleGenerateClick}
                                     disabled={isGenerating || !uploadedImage || pendingGeneration}
                                 >
                                     {isGenerating ? 'Generating...' : pendingGeneration ? 'Verifying...' : 'Generate Ghibli Style Image'}
                                 </button>
+
+                                {/* 只在未登录状态下显示免费点数提示 */}
+                                {!user && (
+                                    <p className="ml-4 text-sm text-[#506a3a]">Remaining Free Credits: {freeCredits} &nbsp;&nbsp;
+                                        <button
+                                            onClick={() => {
+                                                setLoginModalRedirectTo(`${window.location.origin}/temp-purchase`)
+                                                setIsLoginModalOpen(true); // 打开登录模态框
+                                            }}
+                                            className="text-[#1c4c3b] font-medium underline"
+                                        >
+                                            Add Credits
+                                        </button>
+                                    </p>
+                                )}
+
+                                {/* 已登录用户不在这里显示点数信息，因为右上角的用户信息区已经有用户点数信息了 */}
                             </div>
 
                             <p className="text-sm text-[#506a3a] mt-4">

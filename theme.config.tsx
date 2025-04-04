@@ -5,6 +5,7 @@ import NextLink from 'next/link'
 import { GitHubIcon, DiscordIcon, StackOverflowIcon, TwitterIcon, YouTubeIcon } from '@components/icons'
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
+import AuthNav from '@/components/auth/AuthNav'
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -188,7 +189,12 @@ const config: DocsThemeConfig = {
   //   link: 'https://github.com/shuding/nextra'
   // },
   navbar: {
-    extraContent: <ThemeSwitch lite className="[&_span]:hidden" />,
+    extraContent: (
+      <div className="flex items-center gap-2">
+        <AuthNav />
+        {/* <ThemeSwitch lite className="[&_span]:hidden" /> */}
+      </div>
+    ),
   },
   docsRepositoryBase: 'https://github.com/happydrew/youtubetomp3/tree/main/docs',
   logo,

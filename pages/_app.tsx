@@ -3,9 +3,11 @@ import { type ReactElement } from 'react'
 import Script from 'next/script';
 import Head from 'next/head';
 import '../style.css';
-import { useEffect } from 'react';
+import { NextUIProvider } from '@nextui-org/react';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
+
   // useEffect(() => {
   //   document.documentElement.classList.add('dark')
   // }, []);
@@ -18,6 +20,9 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
       {/* Google Adsense */}
       <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4907197973761221" crossOrigin="anonymous"></script>
       <meta name="google-adsense-account" content="ca-pub-4907197973761221" />
+
+      {/* google auth */}
+      <script src="https://accounts.google.com/gsi/client" async defer></script>
     </Head>
 
     {/* moneytag adsense */}
@@ -54,6 +59,10 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
       `}
     </Script>
 
-    <Component {...pageProps} />
+    <NextUIProvider>
+      <AuthProvider>
+        <Component {...pageProps} />
+      </AuthProvider>
+    </NextUIProvider>
   </>)
 }

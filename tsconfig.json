@@ -28,15 +28,19 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "typeRoots": [
+      "node_modules/@types",
+      "types"
+    ]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-, "pages/_app.tsx.old_withads"    //"pages/tags/[slug].mdx",
-, "app/page.tsx_bak", "pages/index.tsx"  ],
+    ".next/types/**/*.ts",
+    "**/*.mdx"
+  ],
   "exclude": [
     "node_modules"
   ]
