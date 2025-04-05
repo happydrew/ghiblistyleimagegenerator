@@ -80,7 +80,7 @@ export const Concat = () => {
         <section className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 py-8 pb-12">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="mb-6 sm:mb-8 md:mb-12 text-center">
-                    <h2 className="max-w-xl mx-auto text-3xl font-bold">Concat Us</h2>
+                    <h2 className="max-w-xl mx-auto text-3xl font-bold">Contact Us</h2>
                     <p className="max-w-screen-sm mx-auto text-base text-zinc-400">Have questions, feedback, or need support? We're here to help! Feel free to reach out, and we'll get back to you as soon as possible.</p>
                 </div>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 rounded-lg shadow-lg p-2 flex flex-col sm:flex-row gap-2 sm:gap-4">
@@ -120,19 +120,19 @@ export const Concat = () => {
                             <div className="flex items-start gap-4">
                                 <div>
                                     <label htmlFor="name" className="text-sm font-medium">Your Name</label>
-                                    <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-10 dark:bg-zinc-900 bg-white border border-solid border-gray-200 rounded-md px-3 mt-1 outline-teal-500 text-sm" />
+                                    <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-10 dark:bg-zinc-900 bg-white border border-solid border-gray-300 rounded-md px-3 mt-1 outline-teal-500 text-sm" />
                                 </div>
                                 <div>
                                     <label htmlFor="email" className="text-sm font-medium">Your Email</label>
-                                    <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-10 dark:bg-zinc-900 bg-white border border-solid border-gray-200 rounded-md px-3 mt-1 outline-teal-500 text-sm" /></div>
+                                    <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-10 dark:bg-zinc-900 bg-white border border-solid border-gray-300 rounded-md px-3 mt-1 outline-teal-500 text-sm" /></div>
                             </div>
                             <div>
                                 <label htmlFor="subject" className="text-sm  font-medium">Your Subject</label>
-                                <input type="text" id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full h-10 dark:bg-zinc-900 bg-white border border-solid border-gray-200 rounded-md px-3 mt-1 outline-teal-500 text-sm" />
+                                <input type="text" id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full h-10 dark:bg-zinc-900 bg-white border border-solid border-gray-300 rounded-md px-3 mt-1 outline-teal-500 text-sm" />
                             </div>
                             <div>
                                 <label htmlFor="message" className="text-xs font-medium">Message</label>
-                                <textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} className="w-full h-24 dark:bg-zinc-900 bg-white border border-solid border-gray-200 rounded-md px-3 py-2 mt-1 outline-teal-500 text-sm"></textarea>
+                                <textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} className="w-full h-24 dark:bg-zinc-900 bg-white border border-solid border-gray-300 rounded-md px-3 py-2 mt-1 outline-teal-500 text-sm"></textarea>
                             </div>
                             <div className="mt-6">
                                 <button type='submit'

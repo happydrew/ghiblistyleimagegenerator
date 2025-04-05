@@ -11,7 +11,7 @@ import { Footer } from './Footer';
 
 
 // 登录表单
-export default function LoginForm({ redirectTo }: { redirectTo: string }) {
+export default function LoginForm({ redirectTo, onLoginSuccess }: { redirectTo: string, onLoginSuccess: () => void }) {
 
     const [isLogingWithGoogle, setIsLogingWithGoogle] = useState(false);
     const [loginWithGoogleError, setLoginWithGoogleError] = useState(false);
@@ -21,10 +21,6 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState(null);
     const [passwordError, setPasswordError] = useState(null);
-    const [showFeatureLimitMessage, setShowFeatureLimitMessage] = useState(false);
-
-    // 功能限制提示信息
-    const featureLimitMessage = "Currently only Google login is supported. Other login methods and registration will be implemented soon.";
 
     async function handleLoginWithGoogle() {
         try {
@@ -44,9 +40,6 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
 
     async function handleLoginWithEmailAndPassword(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        // 显示功能限制提示
-        setShowFeatureLimitMessage(true);
-        return;
 
         let hasError = false;
         if (!email) {
@@ -69,14 +62,16 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
             const { user, errorCode } = await loginWithEmailAndPassword(email, password);
             if (errorCode == 'invalid_credentials') { // 邮箱或密码错误
                 setLoginWithEmailAndPasswordError('Email or password is incorrect.');
-                setIsLogingWithEmailAndPassword(false);
             } else if (errorCode) { // 其他错误
                 throw new Error(`login with email and password failed: ${errorCode}`);
+            } else {
+                // 登录成功，等待自动跳转到首页
+                onLoginSuccess();
             }
-            // 登录成功，等待自动跳转到首页
         } catch (e) {
             console.error("login failed", e);
             setLoginWithEmailAndPasswordError('Oops! Login failed, Please try again later.');
+        } finally {
             setIsLogingWithEmailAndPassword(false);
         }
     }
@@ -85,26 +80,12 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
         setEmail(email);
         setEmailError(null);
         setLoginWithEmailAndPasswordError(null);
-        setShowFeatureLimitMessage(false);
     }
 
     function onPasswordChange(password: string) {
         setPassword(password);
         setPasswordError(null);
         setLoginWithEmailAndPasswordError(null);
-        setShowFeatureLimitMessage(false);
-    }
-
-    // 处理注册链接点击
-    function handleSignupClick(e: React.MouseEvent<HTMLAnchorElement>) {
-        e.preventDefault();
-        setShowFeatureLimitMessage(true);
-    }
-
-    // 处理忘记密码链接点击
-    function handleForgotPasswordClick(e: React.MouseEvent<HTMLAnchorElement>) {
-        e.preventDefault();
-        setShowFeatureLimitMessage(true);
     }
 
     return (
@@ -135,11 +116,6 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
                 </div>
             </div>
 
-            {/* 功能限制提示信息 */}
-            <div className={`${showFeatureLimitMessage ? '' : 'hidden'} my-2 p-2 bg-blue-50 text-blue-700 rounded-md text-sm`}>
-                {featureLimitMessage}
-            </div>
-
             <div className='my-5'>
                 <Divider textAlign="center" >OR</Divider>
             </div>
@@ -149,7 +125,7 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
                     emailError={emailError} setEmailError={setEmailError} />
                 <PasswordInput password={password} onPasswordChange={onPasswordChange}
                     passwordError={passwordError} setPasswordError={setPasswordError} />
-                <Link to='/reset-password' className="text-left text-sm text-blue-500 cursor-pointer block" onClick={handleForgotPasswordClick}>
+                <Link to='/reset-password' className="text-left text-sm text-blue-500 cursor-pointer block">
                     Forgot Password?
                 </Link>
                 <div>
@@ -162,7 +138,7 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
                     <div className={`${loginWithEmailAndPasswordError ? '' : 'invisible '}text-red-500 text-sm px-4 py-2 mt-1`}>{loginWithEmailAndPasswordError}</div>
                     <div className="mt-2 text-center">
                         <span className='text-gray-500 text-sm'>Don't have an account?</span>
-                        <Link to="/signup" className="text-sm text-blue-500 hover:text-blue-600 ml-1" onClick={handleSignupClick}>Sign Up</Link>
+                        <Link to="/signup" className="text-sm text-blue-500 hover:text-blue-600 ml-1">Sign Up</Link>
                     </div>
                 </div>
             </form>

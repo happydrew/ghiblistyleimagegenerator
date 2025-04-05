@@ -6,8 +6,8 @@ body {
   font-feature-settings:
     'rlig' 1,
     'calt' 1;
-    background-color: rgb(0, 0, 0);
-    background-image: url("/background.png");
+    /* background-color: rgb(0, 0, 0);
+    background-image: url("/background.png"); */
 }
 
 figcaption {

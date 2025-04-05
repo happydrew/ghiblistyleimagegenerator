@@ -10,7 +10,7 @@ type AuthContextType = {
     isLoading: boolean
     signIn: (email: string, password: string) => Promise<any>
     signUp: (email: string, password: string) => Promise<any>
-    signOut: () => Promise<any>
+    signOut: () => void
     credits: number
     setCredits: (credits: number) => void,
     setIsLoginModalOpen: (isOpen: boolean) => void,
@@ -94,7 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const signOut = () => {
-        return supabase.auth.signOut()
+        supabase.auth.signOut()
+        setCredits(0)
     }
 
     const refreshCredits = async () => {

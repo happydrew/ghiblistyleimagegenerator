@@ -22,8 +22,11 @@ export default function SignupSuccessForm(): React.ReactNode {
                     throw new Error(`login failed with error code ${errorCode}`);
                 } else {
                     setNotification('Login success, redirecting to home page......');
+                    // 登录成功，跳转到首页
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
                 }
-                // 登录成功，自动跳转到首页
             }).catch((e) => {
                 console.error('login after verify failed', e);
                 setNotification('Login failed, please try again later.');
@@ -34,8 +37,8 @@ export default function SignupSuccessForm(): React.ReactNode {
     }, []);
 
     return (
-        <div className="w-full flex justify-center items-center p-6 md:p-10">
-            <div className="max-w-md p-10 bg-white rounded-lg shadow-lg border-solid border-[1px] border-gray-200">
+        <div className="w-full flex justify-center items-center p-6 md:p-10 bg-white">
+            <div className="max-w-md p-10 rounded-lg shadow-lg border-solid border-[1px] border-gray-200">
                 <h2 className="flex justify-center items-center text-2xl font-semibold mb-3 text-gray-700">
                     <CheckCircleIcon sx={{ fontSize: 50, color: 'green' }} />
                     Congratulations! You have registered successfully.

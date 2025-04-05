@@ -11,7 +11,7 @@
             "name": "Next.js: debug server-side",
             "type": "node-terminal",
             "request": "launch",
-            "command": "pnpm run dev",
+            "command": "pnpm dev",
             "env": {
                 "MONGO_CLIENT_URI": "mongodb+srv://zhugetd:imjjzg0929@cluster0.4njgprv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
             }

@@ -27,7 +27,7 @@ export default function UserMenu() {
                 >
                     <User
                         name={user.email?.split('@')[0]}
-                        description={<div className="flex items-center gap-1 text-xs"><FaCoins size={12} className="text-yellow-500" /> {credits} credits</div>}
+                        description={<div className="flex items-center gap-1 text-xs"><FaCoins size={12} className="text-yellow-500" /> {credits} <span className='hidden md:inline'>credits</span></div>}
                         avatarProps={{
                             icon: <FaUser className="h-4 w-4" />,
                             size: "sm",
@@ -57,7 +57,7 @@ export default function UserMenu() {
                 <DropdownItem
                     key="credits"
                     startContent={<FaCoins className="text-yellow-500" size={16} />}
-                    description="View your credits and transaction history"
+                    description="View credits and transaction history"
                     className="text-foreground hover:bg-gray-200"
                     onPress={() => router.push('/credits')}
                 >

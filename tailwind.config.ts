@@ -18,7 +18,7 @@ export default {
           DEFAULT: yellow[600],
           light: yellow[500],
           dark: "#0055aa",
-          500: "#0077cc",
+          500: "#16a34a  ",
         },
         "conf-black": "#0e031c",
         black: "#1b1b1b",

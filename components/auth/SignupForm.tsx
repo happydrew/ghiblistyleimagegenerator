@@ -23,6 +23,8 @@ export default function SignupForm() {
     async function signup(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
+        setSignupError(null);
+
         try {
             let hasError = false;
             if (!email) {
@@ -71,7 +73,6 @@ export default function SignupForm() {
 
     return (
         <div className="max-w-md p-10 bg-white rounded-lg shadow-lg">
-
             <h2 className="flex justify-center items-center text-2xl font-semibold mb-3 text-gray-700">
                 Create your account
             </h2>

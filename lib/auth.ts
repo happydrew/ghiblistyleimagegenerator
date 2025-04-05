@@ -7,6 +7,7 @@ export {
 import { type User } from '@supabase/supabase-js';
 import { SINGUP_URL, VERIFY_EMAIL_URL, RESET_PASS_URL, SEND_RESETPASS_CODE_URL } from '@config';
 import { supabase } from './supabase';
+import { VERIFICATION_CODE_EXPIRE_MINUTES } from '@config_back';
 
 // 定时刷新 access_token
 function autoRefreshToken() {

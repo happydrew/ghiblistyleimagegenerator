@@ -4,7 +4,6 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import { checkFreeUsage, useOneFreeGeneration } from '@lib/usageChecker';
 // 修正导入
 import { useAuth } from '@/contexts/AuthContext';
-import { access } from 'fs';
 // 移除 HashRouter 相关导入
 // import { HashRouter } from "react-router-dom";
 
@@ -791,7 +790,7 @@ const HomePage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-[#f5f9ee]">
+        <div className="min-h-screen bg-white">
 
             {/* 添加升级计划提示框 */}
             {showUpgradeModal && <UpgradeModal />}

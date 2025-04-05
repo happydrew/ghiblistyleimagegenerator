@@ -51,10 +51,9 @@ export default {
     title: 'FAQ',
     href: '/#faq'
   },
-  concat: {
+  contact: {
     type: 'page',
-    title: 'Concat',
-    href: '/concat',
+    title: 'Contact',
     theme: {
       layout: 'raw'
     }
