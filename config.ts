@@ -3,8 +3,7 @@ export {
     SEND_RESETPASS_CODE_URL, RESET_PASS_URL, GIVE_FREE_CREDITS_URL, CREEM_API_KEY, CREEM_API_URL,
     PAYMENT_CALLBACK_URL, PAYMENT_RETURN_URL
 };
-// const extractFormDataUrl = "http://localhost:3000/api/extractFormData";
-// const backEnd = 'http://localhost:3000';
+
 const backEnd = 'https://autoformai-api.floxai.top';
 const extractFormDataUrl = `${backEnd}/api/extractFormData`;
 const SINGUP_URL = `${backEnd}/api/auth/signup`;
