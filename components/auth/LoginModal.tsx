@@ -20,53 +20,8 @@ interface LoginModalProps {
     defaultPath?: string
 }
 
-export default function LoginModal({ isOpen, onClose, redirectTo, defaultPath }: LoginModalProps) {
-    const { signIn, signUp } = useAuth()
-    const [isLoading, setIsLoading] = useState(false)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [error, setError] = useState<string | null>(null)
+export default function LoginModal({ isOpen, onClose, redirectTo }: LoginModalProps) {
     const navigate = useNavigate()
-
-    const handleEmailLogin = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setError(null)
-
-        try {
-            const { error } = await signIn(email, password)
-            if (error) {
-                setError(error.message)
-                return
-            }
-            onClose()
-        } catch (error: any) {
-            setError(error.message || 'Failed to sign in')
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleEmailSignup = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setError(null)
-
-        try {
-            const { error } = await signUp(email, password)
-            if (error) {
-                setError(error.message)
-                return
-            }
-
-            // Show confirmation message
-            setError('Check your email for a confirmation link!')
-        } catch (error: any) {
-            setError(error.message || 'Failed to sign up')
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const onCloseModal = () => {
         onClose()
