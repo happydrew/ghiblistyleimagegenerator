@@ -950,6 +950,7 @@ const HomePage = () => {
                                     <p className="ml-4 text-sm text-[#506a3a]">Remaining Free Credits: {freeCredits} &nbsp;&nbsp;
                                         <button
                                             onClick={() => {
+                                                console.log(`clicking  Add Credits button, current window.location.origin is: ${window.location.origin}`);
                                                 setLoginModalRedirectTo(`${window.location.origin}/temp-purchase`)
                                                 setIsLoginModalOpen(true); // 打开登录模态框
                                             }}

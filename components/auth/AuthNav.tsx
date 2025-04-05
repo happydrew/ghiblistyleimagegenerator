@@ -19,7 +19,11 @@ export default function AuthNav() {
                 <Button
                     color="primary"
                     variant="flat"
-                    onClick={() => { setIsLoginModalOpen(true); setLoginModalRedirectTo(window.location.origin) }}
+                    onClick={() => {
+                        console.log(`Clicking sign in button, current window.location.origin is: ${window.location.origin}`)
+                        setLoginModalRedirectTo(window.location.origin)
+                        setIsLoginModalOpen(true)
+                    }}
                     size="sm"
                     className='text-sm md:text-base border-[1px] border-zinc-300 rounded-md'
                 >
