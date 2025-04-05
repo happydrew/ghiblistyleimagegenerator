@@ -143,7 +143,7 @@ export default function TempPurchase() {
                 {/* Contact info */}
                 <div className="mt-8 text-center">
                     <p className="text-[#506a3a]">
-                        Questions? Contact us at: <a href="mailto:support@ghiblistyle.ai" className="text-[#1c4c3b] font-medium hover:underline">support@ghiblistyle.ai</a>
+                        Questions? Contact us at: <a href="mailto:zhugetd@gmail.com" className="text-[#1c4c3b] font-medium hover:underline">zhugetd@gmail.com</a>
                     </p>
                 </div>
             </div>

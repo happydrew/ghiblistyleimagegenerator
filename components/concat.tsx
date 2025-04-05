@@ -90,10 +90,10 @@ export const Concat = () => {
                         <ul className="text-sm grid grid-cols-2 sm:grid-cols-1 gap-4">
                             <li>
                                 <h4 className="font-medium text-teal-50">Email us :</h4>
-                                <p>drewgrant616@gmail.com</p>
+                                <p>zhugetd@gmail.com</p>
                             </li>
                             <li>
-                                <h4 className="font-medium text-teal-50">Join our community :</h4>
+                                {/* <h4 className="font-medium text-teal-50">Join our community :</h4> */}
                                 {/* <p>
                                     <a className='text-white underline'
                                         href="https://ezymp3ccyoutubetomp3.quora.com/?invite_code=wJ55ugDw4sbNAOAAmIRs" target='_blank'>

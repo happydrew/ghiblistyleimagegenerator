@@ -586,7 +586,7 @@ const HomePage = () => {
     const ImageComparisonCard = ({ id, data_type, original, ghibli, prompt }: { id?: string, data_type?: string, original: string, ghibli: string, prompt?: string }) => (
         <div {...(id && { id })} {...(data_type && { "data-type": data_type })} className="bg-white rounded-xl overflow-hidden shadow-lg border border-[#89aa7b] mb-8">
             <div className="p-4 bg-[#e7f0dc] flex justify-between items-center">
-                <h3 className="text-lg font-bold text-[#1c4c3b]">Ghibli Style Transformation</h3>
+                <h3 className="text-lg font-bold text-[#1c4c3b]">Style Transformation</h3>
                 <div className="flex space-x-2">
                     <button
                         onClick={() => handleShare(original, ghibli)}
@@ -649,7 +649,7 @@ const HomePage = () => {
                         />
                     </div>
                     <div className="p-2 text-center bg-[#f5f9ee]">
-                        <p className="text-[#506a3a] font-medium">Ghibli Style</p>
+                        <p className="text-[#506a3a] font-medium">Stylized</p>
                     </div>
                 </div>
             </div>
@@ -872,20 +872,20 @@ const HomePage = () => {
                 </div>
             )}
 
-            <main className="pt-16">
+            <main className="pt-8">
                 {/* 英雄区域 */}
                 <div id="hero_containter" className='w-full flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12'>
                     {/* <div data-banner-id="1444036"></div> */}
-                    <section className="w-full md:max-w-auto container mx-auto px-4 py-16 text-center">
-                        <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#1c4c3b]">Generate Ghibli Style Image</h1>
+                    <section className="w-full md:max-w-auto container mx-auto px-4 py-8 text-center">
+                        <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#1c4c3b]">Image Stylify</h1>
                         <p className="text-xl md:text-2xl text-[#506a3a] mb-6 max-w-3xl mx-auto">
-                            Convert image to Studio Ghibli-style in seconds
+                            Transform your photos into stunning artistic styles in seconds
                         </p>
                         <p className="text-md text-[#506a3a] mb-12 max-w-3xl mx-auto">
-                            Powered by ChatGPT-4o | Free, fast, and incredibly accurate
+                            Powered by GPT-4o technology | Multiple styles including Ghibli, Anime, Watercolor and more
                         </p>
                         <div className="bg-[#e7f0dc] p-6 rounded-xl max-w-4xl mx-auto shadow-lg border border-[#89aa7b]">
-                            <h2 className="text-2xl font-bold mb-6 text-[#1c4c3b]">Studio Ghibli AI Image Generator</h2>
+                            <h2 className="text-2xl font-bold mb-6 text-[#1c4c3b]">AI-Powered Style Transfer</h2>
 
                             {/* 上传图片区域 */}
                             <div className="mb-6">
@@ -942,7 +942,7 @@ const HomePage = () => {
                                     onClick={handleGenerateClick}
                                     disabled={isGenerating || !uploadedImage || pendingGeneration}
                                 >
-                                    {isGenerating ? 'Generating...' : pendingGeneration ? 'Verifying...' : 'Generate Ghibli Style Image'}
+                                    {isGenerating ? 'Generating...' : pendingGeneration ? 'Verifying...' : 'Transform Your Image'}
                                 </button>
 
                                 {/* 只在未登录状态下显示免费点数提示 */}
@@ -965,7 +965,7 @@ const HomePage = () => {
                             </div>
 
                             <p className="text-sm text-[#506a3a] mt-4">
-                                Powered by <span className="font-semibold">ChatGPT-4o technology</span> | Free, fast, and incredibly accurate
+                                Powered by <span className="font-semibold">GPT-4o technology</span> | Fast, accurate style transformation
                             </p>
                         </div>
                     </section>
@@ -976,7 +976,7 @@ const HomePage = () => {
                 {/* 生成结果区域 */}
                 {(isGenerating || generatedImage || generationError) && (
                     <section className="container mx-auto px-4 py-8">
-                        <h2 className="text-2xl font-bold mb-6 text-center text-[#1c4c3b]">Your Ghibli Transformation</h2>
+                        <h2 className="text-2xl font-bold mb-6 text-center text-[#1c4c3b]">Your Style Transformation</h2>
 
                         {isGenerating && (
                             <div className="flex justify-center items-center p-12">
@@ -1048,56 +1048,56 @@ const HomePage = () => {
 
                 {/* 添加关于Ghibli风格的介绍部分 */}
                 <section id="about" className="container mx-auto px-4 py-16">
-                    <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Exploring the Artistic Magic of Dreamlike Worlds</h2>
+                    <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Exploring the Magic of Artistic Transformations</h2>
                     <p className="text-lg text-[#506a3a] mb-10 text-center max-w-3xl mx-auto">
-                        Studio Ghibli, founded in 1985 by Hayao Miyazaki, is known for meticulously hand-drawn animations and dreamlike aesthetics
+                        Discover various artistic styles including the dreamlike aesthetics of Studio Ghibli and many more
                     </p>
 
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h3 className="text-2xl font-bold mb-4 text-[#1c4c3b]">What is Ghibli Style Art?</h3>
+                            <h3 className="text-2xl font-bold mb-4 text-[#1c4c3b]">Transform Your Photos with AI</h3>
                             <p className="text-[#506a3a] mb-4">
-                                Ghibli-style images are characterized by soft and warm color palettes, delicate line designs, dreamlike natural settings, and a blend of realism and fantasy.
+                                Our Image Stylify tool lets you convert your ordinary photos into artistic masterpieces with various style options including the popular Ghibli style, characterized by soft colors, delicate lines, and dreamlike settings.
                             </p>
                             <p className="text-[#506a3a] mb-4">
-                                With the latest advancements in ChatGPT-4o technology, generating Ghibli-style images has become a sensation on the internet, with millions of users creating these enchanting visuals.
+                                With the latest advancements in GPT-4o technology, artistic style transfer has become a sensation on the internet, with millions of users transforming their photos into enchanting visuals.
                             </p>
                             <p className="text-[#506a3a]">
-                                Even OpenAI's CEO Sam Altman joined the trend by changing his profile picture to a Ghibli-style self-portrait, highlighting the massive popularity of this artistic style.
+                                Even industry leaders like OpenAI's CEO Sam Altman have showcased the technology's capabilities by sharing stylized self-portraits, highlighting the growing popularity of AI-powered artistic transformations.
                             </p>
                         </div>
                         <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b]">
-                            <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Ghibli Style Characteristics:</h3>
+                            <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Popular Style Characteristics:</h3>
                             <ul className="space-y-3">
                                 <li className="flex items-start">
                                     <span className="w-5 h-5 bg-[#e7f0dc] rounded-full flex items-center justify-center mr-3 mt-1">
                                         <span className="w-2 h-2 bg-[#1c4c3b] rounded-full"></span>
                                     </span>
-                                    <span className="text-[#506a3a]">Soft and warm color palettes that evoke nostalgia</span>
+                                    <span className="text-[#506a3a]">Studio Ghibli style: Soft and warm color palettes that evoke nostalgia</span>
                                 </li>
                                 <li className="flex items-start">
                                     <span className="w-5 h-5 bg-[#e7f0dc] rounded-full flex items-center justify-center mr-3 mt-1">
                                         <span className="w-2 h-2 bg-[#1c4c3b] rounded-full"></span>
                                     </span>
-                                    <span className="text-[#506a3a]">Delicate and intricate line designs with careful attention to detail</span>
+                                    <span className="text-[#506a3a]">Anime style: Delicate and intricate line designs with careful attention to detail</span>
                                 </li>
                                 <li className="flex items-start">
                                     <span className="w-5 h-5 bg-[#e7f0dc] rounded-full flex items-center justify-center mr-3 mt-1">
                                         <span className="w-2 h-2 bg-[#1c4c3b] rounded-full"></span>
                                     </span>
-                                    <span className="text-[#506a3a]">Dreamlike natural settings and ethereal lighting effects</span>
+                                    <span className="text-[#506a3a]">Fantasy style: Dreamlike settings and ethereal lighting effects</span>
                                 </li>
                                 <li className="flex items-start">
                                     <span className="w-5 h-5 bg-[#e7f0dc] rounded-full flex items-center justify-center mr-3 mt-1">
                                         <span className="w-2 h-2 bg-[#1c4c3b] rounded-full"></span>
                                     </span>
-                                    <span className="text-[#506a3a]">Unique character designs with expressive features</span>
+                                    <span className="text-[#506a3a]">Character style: Unique designs with expressive features</span>
                                 </li>
                                 <li className="flex items-start">
                                     <span className="w-5 h-5 bg-[#e7f0dc] rounded-full flex items-center justify-center mr-3 mt-1">
                                         <span className="w-2 h-2 bg-[#1c4c3b] rounded-full"></span>
                                     </span>
-                                    <span className="text-[#506a3a]">Perfect blend of realism and fantasy in a cohesive style</span>
+                                    <span className="text-[#506a3a]">Artistic blend: Perfect combination of realism and fantasy in cohesive styles</span>
                                 </li>
                             </ul>
                         </div>
@@ -1106,9 +1106,9 @@ const HomePage = () => {
 
                 {/* 改进灵感区域，包含更多prompt指南 */}
                 <section id="examples" className="container mx-auto px-4 py-16">
-                    <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Get Inspired by Ghibli Art ChatGPT</h2>
+                    <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Style Transformation Gallery</h2>
                     <p className="text-xl text-[#506a3a] mb-10 text-center">
-                        See what others have created with our ghibli style image generator free
+                        See what others have created with our style transformation tools
                     </p>
 
                     <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 mb-12 space-y-4">
@@ -1128,30 +1128,30 @@ const HomePage = () => {
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b] mb-10">
-                        <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Best ChatGPT Ghibli Prompts</h3>
+                        <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Best Style Prompts</h3>
                         <p className="text-[#506a3a] mb-4">
-                            Based on recent user experiences and media reports, here are some effective prompts that deliver amazing results:
+                            Based on user experiences, here are some effective prompts for different artistic styles:
                         </p>
                         <div className="grid md:grid-cols-2 gap-4">
                             <div className="bg-[#f8fbf3] p-3 rounded-lg border border-[#d5e6c3]">
-                                <p className="text-[#506a3a] italic">"Convert the photo into a Ghibli-style character, focusing on details and whimsy."</p>
+                                <p className="text-[#506a3a] italic">"Transform this photo into a Ghibli-style scene with soft watercolors and dreamlike elements."</p>
                             </div>
                             <div className="bg-[#f8fbf3] p-3 rounded-lg border border-[#d5e6c3]">
-                                <p className="text-[#506a3a] italic">"Transform this photo into a hand-drawn animation illustration with watercolor techniques and soft organic lines."</p>
+                                <p className="text-[#506a3a] italic">"Convert my image into a hand-drawn animation style with watercolor techniques and soft organic lines."</p>
                             </div>
                             <div className="bg-[#f8fbf3] p-3 rounded-lg border border-[#d5e6c3]">
-                                <p className="text-[#506a3a] italic">"Create a dreamlike landscape in Miyazaki style with magical elements and warm color palette."</p>
+                                <p className="text-[#506a3a] italic">"Create a dreamy landscape with magical elements and a warm color palette."</p>
                             </div>
                             <div className="bg-[#f8fbf3] p-3 rounded-lg border border-[#d5e6c3]">
-                                <p className="text-[#506a3a] italic">"Ghibli-fy this photo while maintaining the original composition and adding magical, dreamy aesthetics."</p>
+                                <p className="text-[#506a3a] italic">"Stylize this photo while maintaining the original composition and adding magical, dreamy aesthetics."</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="mt-10 text-center">
-                        <h3 className="text-2xl font-bold mb-4 text-[#1c4c3b]">How to Create Ghibli Image with ChatGPT?</h3>
+                        <h3 className="text-2xl font-bold mb-4 text-[#1c4c3b]">How to Transform Your Images?</h3>
                         <p className="text-lg text-[#506a3a] mb-6 max-w-3xl mx-auto">
-                            Our platform makes it simple to convert image to ghibli style with just a few clicks
+                            Our platform makes it simple to transform your images into artistic styles with just a few clicks
                         </p>
 
                         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
@@ -1161,7 +1161,7 @@ const HomePage = () => {
                                 </div>
                                 <h4 className="font-bold text-[#1c4c3b] mb-2">Enter Your Prompt</h4>
                                 <p className="text-[#506a3a] text-sm">
-                                    Describe what you want or use our chatgpt studio ghibli prompt examples
+                                    Describe what you want or use our style prompt examples
                                 </p>
                             </div>
 
@@ -1181,7 +1181,7 @@ const HomePage = () => {
                                 </div>
                                 <h4 className="font-bold text-[#1c4c3b] mb-2">Generate & Download</h4>
                                 <p className="text-[#506a3a] text-sm">
-                                    Get your studio ghibli style ai chatgpt masterpiece instantly
+                                    Get your artistic style masterpiece instantly
                                 </p>
                             </div>
                         </div>
@@ -1191,16 +1191,16 @@ const HomePage = () => {
                 {/* 补充功能区域 */}
                 <section id="features" className="bg-[#e7f0dc] py-16">
                     <div className="container mx-auto px-4">
-                        <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Key Features of Our Ghibli Style Image Generator</h2>
+                        <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Key Features of Our Image Transformation Tool</h2>
                         <p className="text-xl text-[#506a3a] mb-16 text-center max-w-3xl mx-auto">
-                            Experience next-generation chatgpt image generator technology - powerful, free, and privacy-focused
+                            Experience next-generation AI image generator technology - powerful, free, and privacy-focused
                         </p>
 
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b]">
                                 <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Advanced AI Technology</h3>
                                 <p className="text-[#506a3a]">
-                                    Powered by ChatGPT-4o's cutting-edge algorithms that perfectly capture Ghibli's unique artistic style, color palettes, and dreamlike aesthetics.
+                                    Powered by GPT-4o's cutting-edge algorithms that perfectly capture Ghibli's unique artistic style, color palettes, and dreamlike aesthetics.
                                 </p>
                             </div>
 
@@ -1214,14 +1214,14 @@ const HomePage = () => {
                             <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b]">
                                 <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Advanced Prompt Technology</h3>
                                 <p className="text-[#506a3a]">
-                                    Our chatgpt ghibli prompt system accurately interprets complex text descriptions and provides impressive results every time.
+                                    Our advanced prompt system accurately interprets complex text descriptions and provides impressive results every time.
                                 </p>
                             </div>
 
                             <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b]">
                                 <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Lightning-Fast Generation</h3>
                                 <p className="text-[#506a3a]">
-                                    Optimized inference pipeline ensures you can create ghibli image chatgpt masterpieces in seconds without compromising on quality.
+                                    Optimized inference pipeline ensures you can create ghibli style masterpieces in seconds without compromising on quality.
                                 </p>
                             </div>
 
@@ -1235,7 +1235,7 @@ const HomePage = () => {
                             <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b]">
                                 <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Multi-Style Support</h3>
                                 <p className="text-[#506a3a]">
-                                    Create a variety of ghibli portraits and landscapes - from realistic to fantastical, from everyday scenes to magical worlds.
+                                    Choose from various artistic styles including Ghibli, anime, watercolor, oil painting, and more. Each style is carefully crafted to maintain the essence of your original image.
                                 </p>
                             </div>
                         </div>
@@ -1270,34 +1270,38 @@ const HomePage = () => {
                 <section id="faq" className="container mx-auto px-4 py-16">
                     <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Frequently Asked Questions</h2>
                     <p className="text-xl text-[#506a3a] mb-16 text-center">
-                        Have other questions? Contact us at support@ghiblistyle.ai
+                        Have other questions? Contact us at zhugetd@gmail.com
                     </p>
 
                     <div className="max-w-3xl mx-auto space-y-6">
                         {[
                             {
-                                question: 'What is a Ghibli style image generator and how does it work?',
-                                answer: 'Our ghibli style image generator is an AI-powered tool that creates images in the distinctive style of Studio Ghibli animations. Powered by ChatGPT-4o technology, it allows you to create high-quality Miyazaki-style images from text descriptions, with no registration or usage limits.'
+                                question: 'What is Image Stylify and how does it work?',
+                                answer: 'Image Stylify is an AI-powered tool that transforms your photos into various artistic styles including the popular Studio Ghibli aesthetic. Powered by GPT-4o technology, it allows you to create high-quality artistic transformations from your uploaded images, with no registration required for basic usage.'
                             },
                             {
-                                question: 'How do I create the best ghibli image with ChatGPT?',
-                                answer: 'To achieve the best results, use detailed prompts that describe the scene, lighting, and mood you want. Try phrases like "Transform this into a Ghibli-style scene with soft watercolor techniques" or "Create a dreamy landscape in Miyazaki style with magical elements." Our system will interpret your chatgpt ghibli prompt and generate stunning images.'
+                                question: 'What styles are available for image transformation?',
+                                answer: 'Our platform offers multiple artistic styles including Studio Ghibli, anime, watercolor, oil painting, sketch, and more. The Ghibli style is particularly popular for its dreamlike qualities, soft colors, and distinctive aesthetic inspired by the renowned animation studio.'
                             },
                             {
-                                question: 'Is your ghibli style image generator free to use?',
-                                answer: 'Yes, our basic ghibli style image generator free version is completely free to use! We also offer premium options with higher resolution outputs, batch processing, and additional customization features for professional users.'
+                                question: 'Is your style transformation tool free to use?',
+                                answer: 'Yes, our basic style transformation tool is completely free to use! We also offer premium options with higher resolution outputs, batch processing, and additional customization features for professional users.'
                             },
                             {
-                                question: 'How is ChatGPT 4o Ghibli style different from other AI tools?',
-                                answer: 'ChatGPT-4o\'s Ghibli-style generation is based on more advanced understanding capabilities, allowing it to better grasp the essence of Ghibli art rather than just applying surface filters. This results in generated images with higher artistic quality and consistency compared to other available tools.'
+                                question: 'How is GPT-4o Ghibli style different from other AI tools?',
+                                answer: 'GPT-4o\'s Ghibli-style generation is based on more advanced understanding capabilities, allowing it to better grasp the essence of Ghibli art rather than just applying surface filters. This results in generated images with higher artistic quality and consistency compared to other available tools.'
                             },
                             {
                                 question: 'Can I use OpenAI Studio Ghibli functionality for photos with multiple people?',
                                 answer: 'Yes, our system supports processing photos with multiple people, preserving each person\'s unique features while infusing them with Ghibli\'s artistic style. This makes it perfect for family photos or group pictures.'
                             },
                             {
-                                question: 'How do you address copyright concerns with ghibli art chatgpt?',
-                                answer: 'We\'ve developed our system to be inspired by the general aesthetic of Ghibli animation without directly copying specific characters or scenes. Our tool creates original artwork that captures the feel of Ghibli\'s style while respecting intellectual property rights. We encourage users to use generated images responsibly.'
+                                question: 'How do you address copyright concerns with ghibli art GPT-4o?',
+                                answer: 'Our service creates original artwork inspired by animation art styles without directly copying specific copyrighted characters, scenes, or designs. We use AI algorithms trained on diverse artistic techniques to transform your images into stylized artwork that evokes the aesthetic qualities of traditional animation. We encourage users to use generated images responsibly and in compliance with applicable copyright laws. Please review our Terms of Service for detailed usage guidelines.'
+                            },
+                            {
+                                question: 'How is your style transfer different from other tools?',
+                                answer: 'Our platform uses GPT-4o\'s advanced understanding capabilities to grasp the essence of artistic styles rather than just applying surface filters. This results in transformed images with higher artistic quality and consistency compared to other available tools.'
                             }
                         ].map((faq, index) => (
                             <div key={index} className="border border-[#89aa7b] rounded-lg p-6 bg-white">
@@ -1318,7 +1322,7 @@ const HomePage = () => {
                     <div className="container mx-auto px-4">
                         <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">How We Compare</h2>
                         <p className="text-xl text-[#506a3a] mb-16 text-center max-w-3xl mx-auto">
-                            See how our ghibli style image generator compares to other tools in the market
+                            See how our style transformation tool compares to other tools in the market
                         </p>
 
                         <div className="overflow-x-auto">
@@ -1338,10 +1342,10 @@ const HomePage = () => {
                                         <td className="py-3 px-4">Free/Premium</td>
                                         <td className="py-3 px-4">Extremely fast</td>
                                         <td className="py-3 px-4">Extremely high</td>
-                                        <td className="py-3 px-4">Integrates ChatGPT-4o technology, best user experience</td>
+                                        <td className="py-3 px-4">Multiple style options, integrates GPT-4o technology</td>
                                     </tr>
                                     <tr className="border-b border-[#e7f0dc]">
-                                        <td className="py-3 px-4 font-medium">ChatGPT-4o</td>
+                                        <td className="py-3 px-4 font-medium">GPT-4o</td>
                                         <td className="py-3 px-4">Paid membership</td>
                                         <td className="py-3 px-4">Extremely fast</td>
                                         <td className="py-3 px-4">Extremely high</td>
@@ -1376,18 +1380,18 @@ const HomePage = () => {
 
                 {/* 新闻与趋势 */}
                 <section className="container mx-auto px-4 py-16">
-                    <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Latest in Ghibli AI Art Trends</h2>
+                    <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">Latest in AI Art Transformation Trends</h2>
                     <p className="text-xl text-[#506a3a] mb-10 text-center max-w-3xl mx-auto">
-                        The ChatGPT 4o Ghibli Style phenomenon has taken the internet by storm
+                        The artistic style transfer phenomenon has taken the internet by storm
                     </p>
 
                     <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b] mb-10">
-                        <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">OpenAI's Social Media Sensation</h3>
+                        <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Social Media Sensation</h3>
                         <p className="text-[#506a3a] mb-4">
-                            As of March 2025, OpenAI's GPT-4o has made significant breakthroughs in image generation, with Ghibli-style images going viral on social media. Recent reports indicate that millions of users have created Ghibli-style images, causing OpenAI's GPUs to be almost "overheated."
+                            As of recent updates, GPT-4o has made significant breakthroughs in image stylization, with artistic transformations going viral on social media. Many users are particularly drawn to the Ghibli style option, among other available styles.
                         </p>
                         <p className="text-[#506a3a]">
-                            Even OpenAI's CEO Sam Altman joined the trend by changing his social media profile picture to a Ghibli-style self-portrait, commenting on the unexpected popularity of this artistic feature.
+                            Even tech industry leaders have joined the trend by sharing their stylized portraits, commenting on the unexpected popularity of these artistic features.
                         </p>
                     </div>
 
@@ -1395,27 +1399,27 @@ const HomePage = () => {
                         <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b]">
                             <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Comparing AI Ghibli Generators</h3>
                             <p className="text-[#506a3a] mb-4">
-                                While tools like Grok Ghibli and OpenArt Studio Ghibli provide similar functionality, our platform integrates the latest ChatGPT-4o technology for superior results.
+                                While tools like Grok Ghibli and OpenArt Studio Ghibli provide similar functionality, our platform integrates the latest GPT-4o technology for superior results.
                             </p>
                             <p className="text-[#506a3a]">
-                                Independent comparisons show our ghibli style image generator free version outperforms many paid alternatives in quality and accuracy.
+                                Independent comparisons show our style transformation tool outperforms many paid alternatives in quality and accuracy.
                             </p>
                         </div>
 
                         <div className="bg-white p-6 rounded-xl shadow-md border border-[#89aa7b]">
                             <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Creative Applications</h3>
                             <p className="text-[#506a3a] mb-4">
-                                Professional designers are using our platform to create concept art, marketing materials, and unique digital assets with the distinctive Ghibli aesthetic.
+                                Professional designers are using our platform to create concept art, marketing materials, and unique digital assets with distinctive artistic styles.
                             </p>
                             <p className="text-[#506a3a]">
-                                Many users report that ghibli portraits generated through our system have become their most engaging social media profile pictures.
+                                Many users report that stylized portraits generated through our system have become their most engaging social media profile pictures.
                             </p>
                         </div>
                     </div>
                 </section>
 
                 {/* 统计区域 */}
-                <section className="container mx-auto px-4 py-16 text-center">
+                {/* <section className="container mx-auto px-4 py-16 text-center">
                     <h2 className="text-3xl font-bold mb-8 text-[#1c4c3b]">Trusted by Millions</h2>
                     <p className="text-xl text-[#506a3a] mb-16">
                         Join the world's largest ghibli style image generator community
@@ -1437,10 +1441,10 @@ const HomePage = () => {
                             <p className="text-lg text-[#506a3a]">Average Image Quality Rating</p>
                         </div>
                     </div>
-                </section>
+                </section> */}
 
                 {/* 用户评价 */}
-                <section className="bg-[#e7f0dc] py-16">
+                {/* <section className="bg-[#e7f0dc] py-16">
                     <div className="container mx-auto px-4">
                         <h2 className="text-3xl font-bold mb-8 text-center text-[#1c4c3b]">What Users Say About Our Studio Ghibli Style AI</h2>
                         <p className="text-xl text-[#506a3a] mb-16 text-center">
@@ -1462,7 +1466,7 @@ const HomePage = () => {
                                 {
                                     name: 'Robert Wang',
                                     title: 'Independent Game Developer',
-                                    comment: 'As an indie game developer, this chatgpt ghibli prompt tool has been invaluable. The speed and quality of asset generation is unmatched, saving me countless hours of work.'
+                                    comment: 'As an indie game developer, this advanced ghibli prompt tool has been invaluable. The speed and quality of asset generation is unmatched, saving me countless hours of work.'
                                 },
                                 {
                                     name: 'Christine Snow',
@@ -1493,49 +1497,8 @@ const HomePage = () => {
                             ))}
                         </div>
                     </div>
-                </section>
+                </section> */}
             </main>
-
-            {/* 页脚 */}
-            <footer className="bg-[#1c4c3b] text-white py-12">
-                <div className="container mx-auto px-4">
-                    <div className="grid md:grid-cols-3 gap-8 mb-8">
-                        <div>
-                            <div className="flex items-center space-x-2 mb-6">
-                                <Image src="/logo.png" alt="Logo" width={40} height={40} className="rounded-lg" />
-                                <h2 className="text-xl font-bold">Studio Ghibli AI</h2>
-                            </div>
-                            <p className="text-gray-300">
-                                Studio Ghibli AI: Free, unlimited Miyazaki-style AI image generator. No registration, no limits.
-                            </p>
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg font-bold mb-4">About Us</h3>
-                            <ul className="space-y-2">
-                                <li><a href="#features" className="text-gray-300 hover:text-white transition">Features</a></li>
-                                <li><a href="#pricing" className="text-gray-300 hover:text-white transition">Pricing</a></li>
-                                <li><a href="#" className="text-gray-300 hover:text-white transition">Partners</a></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg font-bold mb-4">Tools</h3>
-                            <ul className="space-y-2">
-                                <li><a href="#" className="text-gray-300 hover:text-white transition">Upscale Image</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="border-t border-[#2a6854] pt-8 flex flex-col md:flex-row justify-between items-center">
-                        <p className="text-gray-300 mb-4 md:mb-0">© 2025 • Studio Ghibli AI. All rights reserved.</p>
-                        <div className="flex space-x-6">
-                            <a href="#" className="text-gray-300 hover:text-white transition">Privacy Policy</a>
-                            <a href="#" className="text-gray-300 hover:text-white transition">Terms of Service</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 };

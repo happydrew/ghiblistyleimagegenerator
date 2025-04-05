@@ -13,7 +13,10 @@ const logo = (
   <div className="flex justify-center items-center" title="AutoFormAI">
     <Image src="/favicon.png" alt="Ghibli Style Image Generator logo" width={40} height={40} />
     <span className={`${inter.className} font-cartoon ml-2 text-green-800 text-xl lg:text-3xl font-black drop-shadow-[0_0_10px_#D2B48C]`}>
-      Ghibli<span className='text-amber-500'>Style</span>Image<span className='text-orange-600'>Generator</span>
+      {/* Ghibli */}
+      <span className='text-amber-500'>Image</span>
+      Stylify
+      {/* <span className='text-orange-600'>Generator</span> */}
     </span>
   </div>
 )
@@ -49,63 +52,46 @@ function Footer() {
   return (
     <div className="w-full">
       <div className="flex justify-between items-start mb-24 flex-wrap gap-10">
-        <NextLink href="/" className="max-lg:w-full">
-          {logo}
-        </NextLink>
-        {/* <List
-          title="Document"
-          url="/docs"
+        <div className='flex flex-col gap-8 items-start justify-between w-full md:max-w-[30rem]'>
+          <NextLink href="/" className="max-lg:w-full">
+            {logo}
+          </NextLink>
+          <p className="text-sm">
+            Transform your photos into beautiful animation-inspired
+            artwork with our AI-powered image generator.
+          </p>
+        </div>
+
+        <List
+          title="Fun Tools"
           items={[
-            { title: "Introduction", url: "/docs/introduction" },
-            { title: "Get Started", url: "/docs/get-started" }
-          ]}
-        /> */}
-        {/* <List
-          title="Blog"
-          url="/blog"
-          items={[
-            { title: "blog1", url: "" },
-            { title: "blog2", url: "" },
-            { title: "blog3", url: "" },
-            { title: "blog4", url: "" }
-          ]}
-        /> */}
-        {/* <List
-          title="Code"
-          items={[
-            { title: "GitHub", url: "https://github.com/happydrew/randompokemongenerator" },
-            {
-              title: "GraphQL Specification",
-              url: "https://spec.graphql.org",
-            },
-            { title: "Libraries & Tools", url: "/code" },
-            { title: "Services & Vendors", url: "/code/?tags=services" },
+            { title: "Random Pokemon Generator", url: "https://randompokegen.cc" },
+            { title: "AutoFormFiller", url: "https://autoformai.floxai.top/" },
+            { title: "Youtube to Mp3 Converter", url: "https://ezymp3.cc/" },
+            { title: "NYT Connection Hints", url: "https://nytconnectionshints.cc/" }
+
           ]}
         />
+
         <List
-          title="Community"
+          title="Cool Games"
           items={[
-            {
-              title: "Resources",
-              url: "/community/resources/official-channels",
-            },
-            { title: "Events & Meetups", url: "/community/events" },
-            {
-              title: "Contribute to GraphQL",
-              url: "/community/contribute/essential-links",
-            },
-            { title: "Landscape", url: "https://landscape.graphql.org" },
-            { title: "Shop", url: "https://store.graphql.org" },
+            { title: "Baseball Bros IO", url: "https://baseballbrosio.fun" },
+            { title: "Curve Rush", url: "https://curve-rush.cc" },
+            { title: "GameHome", url: "https://gamehome.fun" }
           ]}
-        />*/}
+        />
+
         <List
           title="About"
           items={[
-            { title: "Concat", url: "/concat" },
-            // { title: "Privacy Policy", url: "https://autoformai.floxai.top/docs/privacy-policy/" },
+            { title: "Privacy Policy", url: "/privacy-policy" },
+            { title: "Terms of Service", url: "/terms-of-service" },
+            { title: "Concat", url: "/concat" }
           ]}
         />
       </div>
+
       <div className="flex justify-between flex-wrap gap-10">
         <p className="text-sm">
           Copyright © {new Date().getFullYear()} GameHome. All

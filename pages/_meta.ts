@@ -67,6 +67,22 @@ export default {
       layout: 'raw'
     }
   },
+  "privacy-policy": {
+    type: 'page',
+    title: 'Privacy Policy',
+    display: 'hidden',
+    theme: {
+      layout: 'default'
+    }
+  },
+  "terms-of-service": {
+    type: 'page',
+    title: 'Terms of Service',
+    display: 'hidden',
+    theme: {
+      layout: 'default'
+    }
+  },
 
 
   // docs: {
