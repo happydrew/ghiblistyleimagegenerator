@@ -75,7 +75,7 @@ async function loginWithGoogle(redirectTo: string): Promise<{ user?: User, error
     console.error('Google login failed:', error.message);
     return { errorCode: error.message || 'Google login failed' };
   } else {
-    console.log('Google login success, data:', data);
+    console.log('Google login success, data:', JSON.stringify(data));
     return {};
   }
 }
