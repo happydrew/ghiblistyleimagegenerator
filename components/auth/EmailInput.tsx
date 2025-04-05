@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { TextField } from '@mui/material';
 
 const EmailInput = ({ email, onEmailChange, emailError, setEmailError }: {

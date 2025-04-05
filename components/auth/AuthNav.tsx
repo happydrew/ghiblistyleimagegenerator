@@ -1,9 +1,6 @@
-import { useState } from 'react'
 import { Button } from '@nextui-org/react'
 import { useAuth } from '@/contexts/AuthContext'
-import LoginModal from './LoginModal'
 import UserMenu from './UserMenu'
-import { MemoryRouter } from "react-router-dom";
 
 export default function AuthNav() {
     const { user, isLoading, setIsLoginModalOpen, setLoginModalRedirectTo } = useAuth()

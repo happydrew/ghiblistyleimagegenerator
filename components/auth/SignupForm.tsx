@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import 'style.css'
 import PasswordInput from './PasswordInput';
 import EmailInput from './EmailInput';
 import { sendEmailVerifyCode } from '@lib/auth';
