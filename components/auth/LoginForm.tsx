@@ -1,6 +1,5 @@
 import { GoogleIcon } from '@components/icons';
 import { useState } from 'react';
-import '@style.css'
 import { loginWithGoogle, loginWithEmailAndPassword } from '@lib/auth';
 import PasswordInput from './PasswordInput';
 import EmailInput from './EmailInput';

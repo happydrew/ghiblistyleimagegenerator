@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import {  useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Divider, Tabs, Tab } from '@nextui-org/react'
 import LoginForm from './LoginForm'
