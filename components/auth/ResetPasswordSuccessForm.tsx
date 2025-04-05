@@ -9,20 +9,18 @@ export default function ResetPasswordSuccessForm(): React.ReactNode {
     useEffect(() => {
         // 等待2秒钟，然后跳转到登录页面
         setTimeout(() => {
-            navigate('/login');
+            navigate('/');
         }, 3000);
     }, []);
 
     return (
-        <div className="w-full flex justify-center items-center bg-white p-6 md:p-10">
-            <div className="max-w-md p-10 bg-white rounded-lg shadow-lg border-solid border-[1px] border-gray-200">
-                <h2 className="flex justify-center items-center text-2xl font-semibold mb-3 text-gray-700">
-                    <CheckCircleIcon sx={{ fontSize: 50, color: 'green' }} />
-                    Congratulations! You have reset your password successfully.
-                </h2>
-                <div className=" popup-body-item text-[16px] leading-[1.25em] text-center text-gray-500 w-full whitespace-normal break-words">
-                    Redirecting to login page in 3 seconds...
-                </div>
+        <div className="max-w-md p-10 bg-white rounded-lg shadow-lg border-solid border-[1px] border-gray-200">
+            <h2 className="flex justify-center items-center text-2xl font-semibold mb-3 text-gray-700">
+                <CheckCircleIcon sx={{ fontSize: 50, color: 'green' }} />
+                Congratulations! You have reset your password successfully.
+            </h2>
+            <div className=" popup-body-item text-[16px] leading-[1.25em] text-center text-gray-500 w-full whitespace-normal break-words">
+                Redirecting to login page in 3 seconds...
             </div>
         </div>
     );
