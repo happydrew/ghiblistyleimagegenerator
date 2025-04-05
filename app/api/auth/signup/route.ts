@@ -2,12 +2,12 @@ import nodemailer from 'nodemailer';
 import { supabaseAdmin } from '@lib/supabase_service';
 import { APP_NAME, VERIFICATION_CODE_EXPIRE_MINUTES, GMAIL_USER, GMAIL_PASS } from '@config_back';
 import { generateVerificationCode } from '@lib/utils';
-import { ProxyAgent } from 'proxy-agent';
 
 export const runtime = 'nodejs'; // 'nodejs' or 'edge'
 
 // HTTP 代理
-const proxyAgent = new ProxyAgent({ host: '127.0.0.1', port: 7890 });
+// import { ProxyAgent } from 'proxy-agent';
+// const proxyAgent = new ProxyAgent({ host: '127.0.0.1', port: 7890 });
 
 const COOLDOWN_MINUTES = 1;
 
@@ -59,13 +59,13 @@ export async function POST(request) {
       user: GMAIL_USER,
       pass: GMAIL_PASS
     },
-    tls: {
-      rejectUnauthorized: false
-    },
-    pooled: true,
-    socketTimeout: 30000,
-    // 使用代理
-    proxy: proxyAgent
+    // tls: {
+    //   rejectUnauthorized: false
+    // },
+    // pooled: true,
+    // socketTimeout: 30000,
+    // // 使用代理
+    // proxy: proxyAgent
   });
 
   // 发送验证码邮件

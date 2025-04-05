@@ -3,8 +3,9 @@ export {
     SEND_RESETPASS_CODE_URL, RESET_PASS_URL, GIVE_FREE_CREDITS_URL
 };
 
-//const backEnd = 'https://ghiblistyleimagegenerator.cc';
-const backEnd = 'http://localhost';
+const backEnd = 'https://ghiblistyleimagegenerator.cc';
+// const backEnd = 'http://localhost';
+
 const extractFormDataUrl = `${backEnd}/api/extractFormData`;
 const SINGUP_URL = `${backEnd}/api/auth/signup`;
 const VERIFY_EMAIL_URL = `${backEnd}/api/auth/verify-email`;
