@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { checkFreeUsage, useOneFreeGeneration } from '@lib/usageChecker';
 // 修正导入
 import { useAuth } from '@/contexts/AuthContext';
-// 移除 HashRouter 相关导入
-// import { HashRouter } from "react-router-dom";
+import UpgradeModal from '@components/UpgradeModal';
+import AdModal from './AdModal';
+import ImageViewerModal from './ImageViewerModal';
+import TurnstileModal from './TurnstileModal';
+import ImageComparisonCard from './ImageComparisonCard';
 
 // 定义历史记录类型
 interface HistoryItem {
@@ -35,10 +37,10 @@ const HomePage = () => {
     const [showPostGenAd, setShowPostGenAd] = useState(false);
     const [isResultBlurred, setIsResultBlurred] = useState(false);
     const [pendingGeneration, setPendingGeneration] = useState(false);
-    const [turnstileToken, setTurnstileToken] = useState<string>('');
     const [showTurnstile, setShowTurnstile] = useState(false);
     const [freeCredits, setFreeCredits] = useState(0);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [imageUploading, setImageUploading] = useState(false);
 
     // 示例提示词
     const examplePrompts = [
@@ -95,65 +97,80 @@ const HomePage = () => {
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        setImageUploading(true);
+        try {
+            const file = e.target.files?.[0];
+            if (!file) return;
 
-        // 检查文件类型
-        if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file');
-            return;
-        }
-
-        // 检查文件大小 (限制为 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('Image size should be less than 5MB');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            if (event.target?.result) {
-                const img = document.createElement('img');
-                img.crossOrigin = 'anonymous'; // 处理跨域问题
-                img.onload = () => {
-                    let width = img.width;
-                    let height = img.height;
-
-                    // 检查宽度并按比例调整高度
-                    if (width > 1024) {
-                        height = Math.round((height * 1024) / width);
-                        width = 1024;
-                    }
-
-                    // 创建一个 canvas 来绘制压缩后的图像
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    if (ctx) {
-                        ctx.drawImage(img, 0, 0, width, height);
-                        // 转换为 WebP 格式
-                        const webpImage = canvas.toDataURL('image/webp');
-                        // 存储压缩后的 base64 字符串用于显示
-                        setUploadedImage(webpImage);
-                        // 清除之前生成的图片
-                        setGeneratedImage(null);
-                    }
-                    canvas.remove();
-                    img.remove();
-                };
-                img.src = event.target.result as string;
+            // 检查文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
             }
-        };
-        reader.readAsDataURL(file);
+
+            // 检查文件大小 (限制为 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size should be less than 5MB');
+                return;
+            }
+
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (event.target?.result) {
+                    const img = document.createElement('img');
+                    img.crossOrigin = 'anonymous'; // 处理跨域问题
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        // 检查宽度并按比例调整高度
+                        if (width > 1024) {
+                            height = Math.round((height * 1024) / width);
+                            width = 1024;
+                        }
+
+                        // 创建一个 canvas 来绘制压缩后的图像
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.drawImage(img, 0, 0, width, height);
+                            // 转换为 WebP 格式
+                            const webpImage = canvas.toDataURL('image/webp');
+                            // 存储压缩后的 base64 字符串用于显示
+                            setUploadedImage(webpImage);
+                            // 清除之前生成的图片
+                            setGeneratedImage(null);
+                        }
+                        canvas.remove();
+                        img.remove();
+                        setImageUploading(false);
+                    };
+                    img.src = event.target.result as string;
+                }
+            };
+            reader.readAsDataURL(file);
+        } finally {
+            setImageUploading(false);
+        }
     };
+
+    const removeUploadedImage = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        setUploadedImage('');
+        // 清除文件输入框的值，避免相同文件不触发onChange事件
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }
 
     const triggerFileInput = () => {
         fileInputRef.current?.click();
     };
 
     const handleTurnstileSuccess = (token: string) => {
-        setTurnstileToken(token);
         if (token) {
             executeGeneration(token);
         }
@@ -186,11 +203,6 @@ const HomePage = () => {
         setIsGenerating(true);
         setGenerationError('');
         setShowTurnstile(false);
-
-        // useOnce();
-        // setIsGenerating(false);
-        // setPendingGeneration(false);
-        // return;
 
         try {
             const base64WithoutPrefix = uploadedImage!.split(',')[1];
@@ -250,11 +262,6 @@ const HomePage = () => {
             setIsGenerating(false);
             setPendingGeneration(false);
         }
-
-
-        // 显示生成前广告
-        // setShowPreGenAd(true);
-        // setPendingGeneration(true);
     };
 
     const useOnce = () => {
@@ -373,204 +380,6 @@ const HomePage = () => {
     const handleImageClick = (imageSrc: string) => {
         setSelectedImage(imageSrc);
         setShowImageViewer(true);
-        window.addEventListener('keydown', handleESC);
-    };
-
-    const handleESC = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            setShowImageViewer(false);
-            window.removeEventListener('keydown', handleESC);
-        }
-    };
-
-    const handleDownload = (original: string, ghibli: string, combined: boolean = false) => {
-        // 下载单张图片
-        const downloadSingle = async (src: string, filename: string) => {
-            let watermark_img = src;
-            const img = document.createElement('img');
-            img.crossOrigin = 'anonymous';
-            img.onload = async () => {
-                // 绘制水印
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-
-                ctx.drawImage(img, 0, 0);
-                // 添加水印
-                ctx!.font = '36px Arial'; // 设置字体和大小
-                ctx!.fillStyle = 'rgba(255, 255, 255, 0.8)'; // 设置水印颜色为浅白色
-                ctx!.textAlign = 'right'; // 右对齐
-                ctx!.fillText('https://GhibliStyleImageGenerator.cc', canvas.width - 12, canvas.height - 12); // 在右下角绘制水印
-                // 转换为 Blob 并下载
-                watermark_img = canvas.toDataURL('image/jpeg');
-
-                const response = await fetch(watermark_img);
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-
-                const link = document.createElement("a");
-                link.href = blobUrl;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                URL.revokeObjectURL(blobUrl); // 释放内存
-
-                canvas.remove();
-                img.remove();
-            }
-            img.src = src;
-        };
-
-        // 如果要下载合并图片
-        if (combined) {
-            // 创建一个画布来合并图片
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            // 加载两张图片
-            const img_ori = document.createElement('img');
-            const img_ghi = document.createElement('img');
-
-            // 创建加载图片的Promise
-            img_ori.crossOrigin = 'anonymous'; // 处理跨域问题
-            img_ghi.crossOrigin = 'anonymous'; // 处理跨域问题
-
-            // 创建加载图片的Promise
-            const loadImage = (img: HTMLImageElement, src: string) => {
-                return new Promise<void>((resolve, reject) => {
-                    img.onload = () => resolve();
-                    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
-                    img.src = src;
-                });
-            };
-
-            Promise.all([
-                loadImage(img_ori, original),
-                loadImage(img_ghi, ghibli)
-            ]).then(() => {
-                // 设置画布大小为两张图片并排
-                canvas.width = 2 * img_ghi.width;
-                canvas.height = img_ghi.height;
-
-                // 绘制两张图片
-                ctx!.drawImage(img_ori, 0, 0, img_ghi.width, img_ghi.height);
-                ctx!.drawImage(img_ghi, img_ghi.width, 0);
-
-                // 转换为 Blob 并下载
-                const base64 = canvas.toDataURL('image/jpeg');
-                downloadSingle(base64, 'ghibli-comparison.png');
-
-                canvas.remove();
-                img_ori.remove();
-                img_ghi.remove();
-            }).catch((error) => {
-                console.error('Error loading images:', error);
-                alert('Failed to load images for download. Please try again.');
-            });
-        } else {
-            // 下载 Ghibli 风格图片
-            downloadSingle(ghibli, 'ghibli-style.png');
-        }
-    };
-
-    const handleShare = async (original: string, ghibli: string) => {
-        try {
-            // 判断是否支持原生分享API
-            if (navigator.share) {
-                // 尝试使用原生分享API
-                await navigator.share({
-                    title: 'My Ghibli Style Image',
-                    text: 'Check out this amazing Ghibli style image I created!',
-                    url: window.location.href
-                });
-                return;
-            }
-
-            // 如果不支持原生分享，则使用备用方法：复制链接或创建分享图像
-            // 创建一个画布来合并图片
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            if (!ctx) {
-                throw new Error('Could not get canvas context');
-            }
-
-            // 加载两张图片
-            const img1 = document.createElement('img');
-            const img2 = document.createElement('img');
-
-            img1.crossOrigin = 'anonymous';
-            img2.crossOrigin = 'anonymous';
-
-            // 创建加载两张图片的Promise
-            const loadImage = (img: HTMLImageElement, src: string) => {
-                return new Promise<void>((resolve, reject) => {
-                    img.onload = () => resolve();
-                    img.onerror = reject;
-                    img.src = src;
-                });
-            };
-
-            try {
-                // 等待两张图片加载完成
-                await Promise.all([
-                    loadImage(img1, original),
-                    loadImage(img2, ghibli)
-                ]);
-
-                // 设置画布大小为两张图片并排
-                canvas.width = img1.width + img2.width;
-                canvas.height = Math.max(img1.height, img2.height);
-
-                // 绘制两张图片
-                ctx.drawImage(img1, 0, 0);
-                ctx.drawImage(img2, img1.width, 0);
-
-                // 将合并后的图片转换为Blob
-                const blob = await new Promise<Blob | null>((resolve) => {
-                    canvas.toBlob(resolve, 'image/png');
-                });
-
-                if (!blob) {
-                    throw new Error('Failed to create image blob');
-                }
-
-                // 尝试使用剪贴板API复制图片
-                try {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({
-                            [blob.type]: blob
-                        })
-                    ]);
-                    alert('Image copied to clipboard! Now you can paste it in your applications.');
-                } catch (clipboardError) {
-                    // 如果剪贴板API失败，提供下载选项
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = 'ghibli-comparison.png';
-                    link.click();
-
-                    URL.revokeObjectURL(url);
-                    alert('Image downloaded successfully! You can now share it manually.');
-                }
-            } catch (imageError) {
-                console.error('Error loading images:', imageError);
-                // 如果加载图片失败，提供复制URL作为后备选项
-                try {
-                    await navigator.clipboard.writeText(window.location.href);
-                    alert('Website URL copied to clipboard. You can share it with others!');
-                } catch (urlError) {
-                    alert('Could not share image. Please try downloading it and sharing manually.');
-                }
-            }
-        } catch (error) {
-            console.error('Error sharing:', error);
-            alert('Failed to share. Please try downloading and sharing manually.');
-        }
     };
 
     // 清除历史记录
@@ -581,224 +390,17 @@ const HomePage = () => {
         }
     };
 
-    // 图片比较组件
-    const ImageComparisonCard = ({ id, data_type, original, ghibli, prompt }: { id?: string, data_type?: string, original: string, ghibli: string, prompt?: string }) => (
-        <div {...(id && { id })} {...(data_type && { "data-type": data_type })} className="bg-white rounded-xl overflow-hidden shadow-lg border border-[#89aa7b] mb-8">
-            <div className="p-4 bg-[#e7f0dc] flex justify-between items-center">
-                <h3 className="text-lg font-bold text-[#1c4c3b]">Style Transformation</h3>
-                <div className="flex space-x-2">
-                    <button
-                        onClick={() => handleShare(original, ghibli)}
-                        className="p-2 bg-[#1c4c3b] text-white rounded-full hover:bg-[#2a6854] transition"
-                        title="Share"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                        </svg>
-                    </button>
-                    <div className="relative group">
-                        <button
-                            className="p-2 bg-[#1c4c3b] text-white rounded-full hover:bg-[#2a6854] transition"
-                            title="Download"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                        </button>
-                        <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                            <div className="py-2 px-1">
-                                <button
-                                    onClick={() => handleDownload(original, ghibli, false)}
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#e7f0dc] w-full text-left rounded"
-                                >
-                                    Download Ghibli Image
-                                </button>
-                                <button
-                                    onClick={() => handleDownload(original, ghibli, true)}
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#e7f0dc] w-full text-left rounded"
-                                >
-                                    Download Comparison
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="flex flex-col md:flex-row">
-                <div className="w-full md:w-1/2 border-r border-[#e7f0dc]">
-                    <div className="relative pt-[100%]">
-                        <img
-                            src={original}
-                            alt="Original image"
-                            className="absolute top-0 left-0 w-full h-full object-contain cursor-pointer"
-                            onClick={() => handleImageClick(original)}
-                        />
-                    </div>
-                    <div className="p-2 text-center bg-[#f5f9ee]">
-                        <p className="text-[#506a3a] font-medium">Original</p>
-                    </div>
-                </div>
-                <div className="w-full md:w-1/2">
-                    <div className="relative pt-[100%]">
-                        <img
-                            src={ghibli}
-                            alt="Ghibli style image"
-                            className="absolute top-0 left-0 w-full h-full object-contain cursor-pointer"
-                            onClick={() => handleImageClick(ghibli)}
-                        />
-                    </div>
-                    <div className="p-2 text-center bg-[#f5f9ee]">
-                        <p className="text-[#506a3a] font-medium">Stylized</p>
-                    </div>
-                </div>
-            </div>
-            {prompt && (
-                <div className="p-3 bg-[#f8fbf3] border-t border-[#e7f0dc]">
-                    <p className="text-sm text-[#506a3a]"><span className="font-medium">Prompt:</span> {prompt}</p>
-                </div>
-            )}
-        </div>
-    );
-
-    // 广告组件
-    const AdModal = ({ isPreGenAd = true, onClose, onAdClick }: {
-        isPreGenAd?: boolean,
-        onClose: () => void,
-        onAdClick: () => void
-    }) => (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70">
-            <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl relative">
-                {/* 关闭按钮 */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
-                    title="Close"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-[#e7f0dc] flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-[#1c4c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-[#1c4c3b]">Support Our Service</h3>
-
-                    <p className="text-[#506a3a] mb-6">
-                        {isPreGenAd
-                            ? "To generate Ghibli images, please view a quick ad. This helps us cover AI costs and keep our tool free for everyone. Thank you for your support!"
-                            : "Your image is ready! Please view a quick ad to reveal it. Your support helps keep our AI service free and accessible."}
-                    </p>
-
-                    <div className="flex flex-col w-full space-y-3">
-                        <button
-                            onClick={onAdClick}
-                            className="px-4 py-3 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition w-full flex items-center justify-center"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            </svg>
-                            {isPreGenAd ? 'View Ad to Continue' : 'View Ad to Reveal Image'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
-    // 升级计划模态框组件
-    const UpgradeModal = () => (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70">
-            <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl relative">
-                {/* 关闭按钮 */}
-                <button
-                    onClick={() => setShowUpgradeModal(false)}
-                    className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
-                    title="Close"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-[#e7f0dc] flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#1c4c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                        </svg>
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-[#1c4c3b]">
-                        {user
-                            ? "Your Credits Have Been Used Up"
-                            : "You've Used All Your Free Credits"
-                        }
-                    </h3>
-
-                    <p className="text-[#506a3a] mb-2">
-                        {user
-                            ? "You don't have sufficient credits to generate more images. Please upgrade your plan to continue creating stunning Ghibli style images."
-                            : "You've used all your free image generations. Please log in and upgrade to a premium plan to continue creating amazing Ghibli style images."
-                        }
-                    </p>
-
-                    <p className="text-[#1c4c3b] font-medium mb-6">
-                        Premium plans start at just $1!
-                    </p>
-
-                    <div className="flex flex-col w-full space-y-3">
-                        {user ? (
-                            <button
-                                onClick={() => {
-                                    window.location.href = '/temp-purchase';
-                                    setShowUpgradeModal(false);
-                                }}
-                                className="px-4 py-3 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition w-full flex items-center justify-center"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                Upgrade Now
-                            </button>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={() => {
-                                        console.log(`current is in upgrade modal, redirecting to login page, window.location.origin is: ${window.location.origin}`);
-                                        setLoginModalRedirectTo(`${window.location.origin}/temp-purchase`)
-                                        setIsLoginModalOpen(true); // 打开登录模态框
-                                        setShowUpgradeModal(false); // 关闭升级模态框
-                                    }}
-                                    className="px-4 py-3 bg-[#1c4c3b] text-white rounded-lg hover:bg-[#2a6854] transition w-full flex items-center justify-center"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                    </svg>
-                                    Log In to Continue
-                                </button>
-                                {/* <p className="text-sm text-[#506a3a] mt-2">
-                                    Don't have an account yet? <button onClick={() => window.location.href = '/signup'} className="text-[#1c4c3b] font-medium">Sign up now</button>
-                                </p> */}
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
     return (
         <div className="min-h-screen bg-white">
 
             {/* 添加升级计划提示框 */}
-            {showUpgradeModal && <UpgradeModal />}
+            {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
 
             {/* 添加广告模态框 */}
             {showPreGenAd && (
                 <AdModal
-                    isPreGenAd={true}
+                    hint="To generate Ghibli images, please view a quick ad. This helps us cover AI costs and keep our tool free for everyone. Thank you for your support!"
+                    button_name='View Ad to Continue'
                     onClose={() => handleCloseAd(true)}
                     onAdClick={() => handleAdClick(true)}
                 />
@@ -806,70 +408,28 @@ const HomePage = () => {
 
             {showPostGenAd && (
                 <AdModal
-                    isPreGenAd={false}
+                    hint="Your image is ready! Please view a quick ad to reveal it. Your support helps keep our AI service free and accessible."
+                    button_name='View Ad to Reveal Image'
                     onClose={() => handleCloseAd(false)}
                     onAdClick={() => handleAdClick(false)}
                 />
             )}
 
             {/* 添加图片查看器模态框 */}
-            {showImageViewer && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80" onClick={() => setShowImageViewer(false)}>
-                    <div className="relative max-w-4xl max-h-[90vh] p-2 bg-white/10 rounded-lg backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className="absolute right-3 top-3 bg-white/30 rounded-full p-2 text-white hover:bg-white/50 transition z-10"
-                            onClick={() => setShowImageViewer(false)}
-                            title="Close image viewer"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                        <img
-                            src={selectedImage}
-                            alt="Enlarged Ghibli style image"
-                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-                        />
-                    </div>
-                </div>
-            )}
+            {showImageViewer && <ImageViewerModal image_src={selectedImage} onClose={() => setShowImageViewer(false)} />}
 
             {/* Turnstile验证模态框 */}
-            {showTurnstile && (
-                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70">
-                    <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl relative">
-                        {/* 关闭按钮 */}
-                        <button
-                            onClick={() => {
-                                setShowTurnstile(false);
-                                setPendingGeneration(false);
-                            }}
-                            className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
-                            title="Close verification"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        <div className="flex flex-col items-center text-center">
-                            <h3 className="text-xl font-bold mb-4 text-[#1c4c3b]">Security Verification</h3>
-                            <p className="text-[#506a3a] mb-4">
-                                Please complete the security check to generate your image.
-                            </p>
-
-                            <div className="mb-4">
-                                <Turnstile
-                                    siteKey="0x4AAAAAABDqaLqpWZbP4Ed_"  // 替换为您的实际site key
-                                    onSuccess={handleTurnstileSuccess}
-                                    onError={() => setTurnstileToken('')}
-                                    onExpire={() => setTurnstileToken('')}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {showTurnstile &&
+                <TurnstileModal
+                    onClickCloseButton={() => {
+                        setShowTurnstile(false);
+                        setPendingGeneration(false);
+                    }}
+                    onSuccess={handleTurnstileSuccess}
+                    onError={null}
+                    onExpire={null}
+                />
+            }
 
             <main className="pt-8">
                 {/* 英雄区域 */}
@@ -909,10 +469,7 @@ const HomePage = () => {
                                             <div className="absolute bottom-0 right-0 m-2">
                                                 <button
                                                     className="bg-white/80 p-1 rounded-full text-[#1c4c3b] hover:bg-white transition"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setUploadedImage(null);
-                                                    }}
+                                                    onClick={removeUploadedImage}
                                                     title="Remove uploaded image"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1110,7 +667,7 @@ const HomePage = () => {
                         See what others have created with our style transformation tools
                     </p>
 
-                    <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 mb-12 space-y-4">
+                    <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 mb-12">
                         {[...Array(12)].map((_, index) => (
                             <div
                                 key={index}
