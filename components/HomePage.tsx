@@ -22,6 +22,8 @@ type TaskStatus = 'IDLE' | 'GENERATING' | 'SUCCESS' | 'FAILED';
 
 const MAX_FREE = 3;
 
+const CHECK_STATUS_INTERVAL = 60000;
+
 const HomePage = () => {
     // 使用AuthContext
     const { user, credits, setIsLoginModalOpen, setLoginModalRedirectTo, getAccessToken } = useAuth();
@@ -61,7 +63,7 @@ const HomePage = () => {
 
     // 添加提示信息数组
     const waitingTips = [
-        "Creating your Ghibli-style masterpiece...",
+        "Creating your Ghibli-style masterpiece, do not refresh the page",
         "This may take a few minutes depending on image size",
         "Our AI is carefully crafting your artistic transformation",
         "Processing time varies based on server load",
@@ -319,7 +321,7 @@ const HomePage = () => {
         // 设置新的轮询间隔
         const intervalId = setInterval(() => {
             checkTaskStatus(taskId);
-        }, 10000); // 每5秒检查一次
+        }, CHECK_STATUS_INTERVAL); // 每30秒检查一次
 
         // 直接更新ref，不使用状态更新
         pollingIntervalRef.current = intervalId;
