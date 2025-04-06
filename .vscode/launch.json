@@ -13,14 +13,14 @@
             "request": "launch",
             "command": "pnpm dev",
             "env": {
-                "MONGO_CLIENT_URI": "mongodb+srv://zhugetd:imjjzg0929@cluster0.4njgprv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+                // "MONGO_CLIENT_URI": "mongodb+srv://zhugetd:imjjzg0929@cluster0.4njgprv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
             }
         },
         {
             "name": "Next.js: debug full stack",
             "type": "node-terminal",
             "request": "launch",
-            "command": "pnpm run dev",
+            "command": "pnpm dev",
             "serverReadyAction": {
                 "pattern": "started server on .+, url: (https?://.+)",
                 "uriFormat": "%s",

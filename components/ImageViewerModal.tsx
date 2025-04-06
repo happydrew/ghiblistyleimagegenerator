@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const ImageViewerModal = ({ image_src, onClose: onClose }: { image_src: string, onClose: () => void }) => {
+const ImageViewerModal = ({ imageSrc, onClose }: { imageSrc: string, onClose: () => void }) => {
 
     const handleESC = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
@@ -29,7 +29,7 @@ const ImageViewerModal = ({ image_src, onClose: onClose }: { image_src: string, 
                     </svg>
                 </button>
                 <img
-                    src={image_src}
+                    src={imageSrc}
                     alt="Enlarged Ghibli style image"
                     className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
                 />

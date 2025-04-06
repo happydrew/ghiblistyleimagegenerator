@@ -2,21 +2,21 @@ import { Turnstile } from '@marsidev/react-turnstile';
 
 // cf Turnstile验证模态框组件
 const TurnstileModal = ({
-    onClickCloseButton,
+    onClose,
     onSuccess,
     onError,
     onExpire
 }: {
-    onClickCloseButton: () => void,
+    onClose: () => void,
     onSuccess: (token: string) => void,
-    onError: () => void,
-    onExpire: () => void
+    onError?: () => void,
+    onExpire?: () => void
 }) => {
     return <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70">
         <div className="bg-white p-6 rounded-xl max-w-md border-2 border-[#89aa7b] shadow-xl relative">
             {/* 关闭按钮 */}
             <button
-                onClick={onClickCloseButton}
+                onClick={onClose}
                 className="absolute top-3 right-3 text-[#506a3a] hover:text-[#1c4c3b]"
                 title="Close verification"
             >

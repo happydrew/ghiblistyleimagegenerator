@@ -17,6 +17,9 @@ interface HistoryItem {
     prompt?: string;
 }
 
+// 添加任务状态类型定义
+type TaskStatus = 'IDLE' | 'GENERATING' | 'SUCCESS' | 'FAILED';
+
 const MAX_FREE = 3;
 
 const HomePage = () => {
@@ -42,6 +45,12 @@ const HomePage = () => {
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [imageUploading, setImageUploading] = useState(false);
 
+    // 任务相关状态
+    const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+    const [taskStatus, setTaskStatus] = useState<TaskStatus>('IDLE');
+    const [pollingCount, setPollingCount] = useState(0);
+    const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
     // 示例提示词
     const examplePrompts = [
         "A small countryside town in Ghibli style, sunset, with a winding path leading to a castle in the distance",
@@ -49,6 +58,18 @@ const HomePage = () => {
         "A magical forest with spirits and soft glowing lights in Miyazaki style",
         "An oceanic scene with flying machines and fluffy clouds in Ghibli aesthetic"
     ];
+
+    // 添加提示信息数组
+    const waitingTips = [
+        "Creating your Ghibli-style masterpiece...",
+        "This may take a few minutes depending on image size",
+        "Our AI is carefully crafting your artistic transformation",
+        "Processing time varies based on server load",
+        "Please wait while we work our magic..."
+    ];
+
+    const [currentTipIndex, setCurrentTipIndex] = useState(0);
+    const tipIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // 只在用户未登录时才检查免费使用次数
     useEffect(() => {
@@ -62,6 +83,12 @@ const HomePage = () => {
             });
         }
     }, [user]);
+
+    useEffect(() => {
+        if (localStorage.getItem('currentTaskId')) {
+            setCurrentTaskId(localStorage.getItem('currentTaskId'));
+        }
+    }, []);
 
     // 加载历史记录
     useEffect(() => {
@@ -90,6 +117,50 @@ const HomePage = () => {
             }
         }
     }, [history]);
+
+    // 在页面加载时恢复任务状态
+    useEffect(() => {
+        const savedTaskId = localStorage.getItem('currentTaskId');
+        const savedUploadedImage = localStorage.getItem('pendingUploadedImage');
+
+        if (savedTaskId && savedUploadedImage) {
+            setCurrentTaskId(savedTaskId);
+            setUploadedImage(savedUploadedImage);
+            setTaskStatus('GENERATING');
+            setIsGenerating(true);
+            startPollingTaskStatus(savedTaskId);
+        }
+    }, []);
+
+    // 添加轮动提示的effect
+    useEffect(() => {
+        if (isGenerating) {
+            // 清除之前的interval
+            if (tipIntervalRef.current) {
+                clearInterval(tipIntervalRef.current);
+            }
+
+            // 设置新的interval
+            const intervalId = setInterval(() => {
+                setCurrentTipIndex(prev => (prev + 1) % waitingTips.length);
+            }, 5000);
+
+            tipIntervalRef.current = intervalId;
+        } else {
+            // 停止轮动
+            if (tipIntervalRef.current) {
+                clearInterval(tipIntervalRef.current);
+                tipIntervalRef.current = null;
+            }
+        }
+
+        // 清理函数
+        return () => {
+            if (tipIntervalRef.current) {
+                clearInterval(tipIntervalRef.current);
+            }
+        };
+    }, [isGenerating]);
 
     const handleRandomPrompt = () => {
         const randomIndex = Math.floor(Math.random() * examplePrompts.length);
@@ -177,7 +248,6 @@ const HomePage = () => {
     };
 
     const handleGenerateClick = async () => {
-
         if (!uploadedImage) {
             alert('Please upload an image first');
             return;
@@ -190,8 +260,6 @@ const HomePage = () => {
             return;
         }
 
-        // executeGeneration("");
-
         // 还有点数的用户可以继续生成
         setShowTurnstile(true);
         setPendingGeneration(true);
@@ -203,10 +271,10 @@ const HomePage = () => {
         setIsGenerating(true);
         setGenerationError('');
         setShowTurnstile(false);
+        setPendingGeneration(false);
+        setTaskStatus('GENERATING');
 
         try {
-            const base64WithoutPrefix = uploadedImage!.split(',')[1];
-
             const accessToken = await getAccessToken();
 
             const response = await fetch('/api/generate-ghibli', {
@@ -215,53 +283,125 @@ const HomePage = () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    image: base64WithoutPrefix,
+                    image: uploadedImage,
                     turnstileToken: token,
                     accessToken
                 })
             });
 
             if (response.ok) {
+                useOnce(); // 扣除积分点数
                 const responseData = await response.json();
-                // 确保使用正确的属性路径获取图片数据
-                const ghibliImage = responseData.ghibliImage;
-                setIsGenerating(false);
-                setGeneratedImage(ghibliImage);
-                const img = document.createElement('img');
-                img.crossOrigin = 'anonymous'; // 处理跨域问题
-                img.onload = () => {
-                    // 转换为 WebP 格式
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    if (ctx) {
-                        ctx.drawImage(img, 0, 0, img.width, img.height);
-                        // 转换为 WebP 格式
-                        const img_base64 = canvas.toDataURL('image/jpeg');
-                        setGeneratedImage(img_base64);
-                        addToHistory(uploadedImage, img_base64);
-                    }
-                    canvas.remove();
-                    img.remove();
-                }
-                img.src = ghibliImage;
 
-                useOnce();
-
-                // 设置模糊效果并显示生成后广告
-                // setIsResultBlurred(true);
-                // setShowPostGenAd(true);
+                // 获取任务ID并开始轮询
+                setCurrentTaskId(responseData.taskId);
+                // 保存任务ID和上传图片到localStorage
+                localStorage.setItem('currentTaskId', responseData.taskId);
+                localStorage.setItem('pendingUploadedImage', uploadedImage);
+                startPollingTaskStatus(responseData.taskId);
             } else {
-                setGenerationError('Failed to generate image. Please try again.');
+                const errorData = await response.json();
+                taskFailed(errorData.error || 'Failed to create generation task');
             }
         } catch (error) {
-            console.error('Error generating image:', error);
-            setGenerationError('An error occurred. Please try again later.');
-        } finally {
-            setIsGenerating(false);
-            setPendingGeneration(false);
+            console.error('Error starting generation task:', error);
+            taskFailed('An error occurred when creating generation task');
         }
+    };
+
+    // 开始轮询任务状态
+    const startPollingTaskStatus = (taskId: string) => {
+        // 清除之前的轮询
+        if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+        }
+
+        // 设置新的轮询间隔
+        const intervalId = setInterval(() => {
+            checkTaskStatus(taskId);
+        }, 10000); // 每5秒检查一次
+
+        // 直接更新ref，不使用状态更新
+        pollingIntervalRef.current = intervalId;
+    };
+
+    // 检查任务状态
+    const checkTaskStatus = async (taskId: string) => {
+        console.log(`Checking task ${taskId} status)`);
+        try {
+            const response = await fetch(`/api/generate-ghibli/task-status?taskId=${taskId}`);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Check Task ${taskId} status, respnse: ${JSON.stringify(data)}`);
+
+                if (data.status === 'SUCCESS') {
+                    // 生成成功，显示图片
+
+                    // 处理并显示图片
+                    setGeneratedImage(data.ghibliImage);
+                    const img = document.createElement('img');
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.drawImage(img, 0, 0, img.width, img.height);
+                            const img_base64 = canvas.toDataURL('image/jpeg');
+                            setGeneratedImage(img_base64);
+                            // 获取当前最新的uploadedImage值
+                            const currentUploadedImage = localStorage.getItem('pendingUploadedImage') || uploadedImage;
+                            console.log(`Check status success, using image: ${currentUploadedImage ? 'has image' : 'no image'}`);
+                            addToHistory(currentUploadedImage, img_base64);
+                        }
+                        canvas.remove();
+                        img.remove();
+
+                        stopPolling();
+                        setTaskStatus('SUCCESS');
+                        setIsGenerating(false);
+                        setCurrentTaskId(null);
+                        // 清除localStorage中的任务ID和上传图片
+                        localStorage.removeItem('currentTaskId');
+                        localStorage.removeItem('pendingUploadedImage');
+                    };
+                    img.src = data.ghibliImage;
+                } else if (data.status === 'GENERATING') {
+                    // 仍在生成中，继续轮询
+                } else {
+                    // 生成失败或其他状态
+                    taskFailed(data.message || 'Image generation failed');
+                }
+            } else {
+                // API请求失败
+                taskFailed('Failed to check task status');
+            }
+        } catch (error) {
+            taskFailed(`Error checking task status: ${error}`);
+        }
+    };
+
+    const taskFailed = (error: string) => {
+        stopPolling();
+        setTaskStatus('FAILED');
+        setIsGenerating(false);
+        setGenerationError(error);
+        setCurrentTaskId(null);
+        // 清除localStorage中的任务ID和上传图片
+        localStorage.removeItem('currentTaskId');
+        localStorage.removeItem('pendingUploadedImage');
+    }
+
+    // 停止轮询
+    const stopPolling = () => {
+        console.log(`Stopping polling, pollingInterval is: ${pollingIntervalRef.current}`);
+        if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+        }
+        setPendingGeneration(false);
     };
 
     const useOnce = () => {
@@ -271,9 +411,7 @@ const HomePage = () => {
             setFreeCredits(prev => prev - 1);
             useOneFreeGeneration();
         } else {
-            // 已登录用户，扣减账户点数（此功能稍后实现）
-            console.log('Deducting points from user account - to be implemented');
-            // 这里未来会调用扣减用户账户点数的API
+            // 已登录用户在后台自动扣除积分
         }
     }
 
@@ -300,64 +438,7 @@ const HomePage = () => {
         if (isPreGenAd) {
             // 关闭生成前广告
             setShowPreGenAd(false);
-            setPendingGeneration(false);
-
-            // 开始生成过程
-            setIsGenerating(true);
-            setGenerationError('');
-
-            try {
-                // 移除 base64 字符串的前缀部分
-                const base64WithoutPrefix = uploadedImage!.split(',')[1];
-
-                // 调用后端API生成图片
-                const response = await fetch('/api/generate-ghibli', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        image: base64WithoutPrefix,
-                    })
-                });
-
-                if (response.ok) {
-                    const responseData = await response.json();
-                    // 确保使用正确的属性路径获取图片数据
-                    const ghibliImage = responseData.ghibliImage;
-                    setIsGenerating(false);
-                    setGeneratedImage(ghibliImage);
-                    const img = document.createElement('img');
-                    img.crossOrigin = 'anonymous'; // 处理跨域问题
-                    img.onload = () => {
-                        // 转换为 WebP 格式
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-                        if (ctx) {
-                            ctx.drawImage(img, 0, 0, img.width, img.height);
-                            // 转换为 WebP 格式
-                            const img_base64 = canvas.toDataURL('image/jpeg');
-                            setGeneratedImage(img_base64);
-                        }
-                        canvas.remove();
-                        img.remove();
-                    }
-                    img.src = ghibliImage;
-
-                    // 设置模糊效果并显示生成后广告
-                    setIsResultBlurred(true);
-                    setShowPostGenAd(true);
-                } else {
-                    setGenerationError('Failed to generate image. Please try again.');
-                }
-            } catch (error) {
-                console.error('Error generating image:', error);
-                setGenerationError('An error occurred. Please try again later.');
-            } finally {
-                setIsGenerating(false);
-            }
+            handleGenerateClick();
         } else {
             // 关闭生成后广告并移除模糊效果
             setShowPostGenAd(false);
@@ -397,39 +478,40 @@ const HomePage = () => {
             {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
 
             {/* 添加广告模态框 */}
-            {showPreGenAd && (
+            {/* {showPreGenAd && (
                 <AdModal
-                    hint="To generate Ghibli images, please view a quick ad. This helps us cover AI costs and keep our tool free for everyone. Thank you for your support!"
-                    button_name='View Ad to Continue'
                     onClose={() => handleCloseAd(true)}
                     onAdClick={() => handleAdClick(true)}
+                    message="View an ad to generate your image for free!"
                 />
             )}
 
             {showPostGenAd && (
                 <AdModal
-                    hint="Your image is ready! Please view a quick ad to reveal it. Your support helps keep our AI service free and accessible."
-                    button_name='View Ad to Reveal Image'
                     onClose={() => handleCloseAd(false)}
                     onAdClick={() => handleAdClick(false)}
+                    message="View an ad to see your image in full quality!"
+                />
+            )} */}
+
+            {/* 添加图片查看器 */}
+            {showImageViewer && selectedImage && (
+                <ImageViewerModal
+                    imageSrc={selectedImage}
+                    onClose={() => setShowImageViewer(false)}
                 />
             )}
 
-            {/* 添加图片查看器模态框 */}
-            {showImageViewer && <ImageViewerModal image_src={selectedImage} onClose={() => setShowImageViewer(false)} />}
-
-            {/* Turnstile验证模态框 */}
-            {showTurnstile &&
+            {/* 添加Turnstile验证模态框 */}
+            {showTurnstile && (
                 <TurnstileModal
-                    onClickCloseButton={() => {
+                    onSuccess={handleTurnstileSuccess}
+                    onClose={() => {
                         setShowTurnstile(false);
                         setPendingGeneration(false);
                     }}
-                    onSuccess={handleTurnstileSuccess}
-                    onError={null}
-                    onExpire={null}
                 />
-            }
+            )}
 
             <main className="pt-8">
                 {/* 英雄区域 */}
@@ -540,7 +622,9 @@ const HomePage = () => {
                                     <div className="w-16 h-16 border-4 border-[#e7f0dc] border-t-[#1c4c3b] rounded-full animate-spin"></div>
                                     <span className="sr-only">Loading...</span>
                                 </div>
-                                <p className="ml-4 text-lg text-[#1c4c3b]">Creating Ghibli magic...</p>
+                                <div className="ml-4">
+                                    <p className="text-lg text-[#1c4c3b]">{waitingTips[currentTipIndex]}</p>
+                                </div>
                             </div>
                         )}
 

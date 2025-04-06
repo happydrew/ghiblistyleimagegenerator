@@ -217,7 +217,7 @@ const ImageComparisonCard = ({
     return (
         <div>
             {/* 添加图片查看器模态框 */}
-            {showImageViewer && <ImageViewerModal image_src={selectedImage} onClose={() => setShowImageViewer(false)} />}
+            {showImageViewer && <ImageViewerModal imageSrc={selectedImage} onClose={() => setShowImageViewer(false)} />}
 
             <div {...(id && { id })} {...(data_type && { "data-type": data_type })} className="bg-white rounded-xl overflow-hidden shadow-lg border border-[#89aa7b] mb-8">
                 <div className="p-4 bg-[#e7f0dc] flex justify-between items-center">
