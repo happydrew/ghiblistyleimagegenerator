@@ -58,14 +58,14 @@ export default {
       layout: 'raw'
     }
   },
-  "temp-purchase": {
-    type: 'page',
-    title: 'Temp Purchase',
-    display: 'hidden',
-    theme: {
-      layout: 'raw'
-    }
-  },
+  // "temp-purchase": {
+  //   type: 'page',
+  //   title: 'Temp Purchase',
+  //   display: 'hidden',
+  //   theme: {
+  //     layout: 'raw'
+  //   }
+  // },
   "privacy-policy": {
     type: 'page',
     title: 'Privacy Policy',

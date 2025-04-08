@@ -84,7 +84,7 @@ export default function TempPurchase() {
 
                             <ol className="list-decimal list-inside space-y-2 ml-2">
                                 <li>Click the PayPal button below to go to our secure payment page</li>
-                                <li>Enter your desired payment amount ($1.00 minimum)</li>
+                                <li>Enter your desired payment amount ($5.00 minimum)</li>
                                 <li>
                                     <strong>Critical:</strong> In the payment note, copy and paste your account email:
                                     <div className="mt-2 p-3 bg-white rounded border border-gray-200 flex justify-between items-center">

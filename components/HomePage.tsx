@@ -394,6 +394,8 @@ const HomePage = () => {
         // 清除localStorage中的任务ID和上传图片
         localStorage.removeItem('currentTaskId');
         localStorage.removeItem('pendingUploadedImage');
+        // 返还用户点数
+        
     }
 
     // 停止轮询
